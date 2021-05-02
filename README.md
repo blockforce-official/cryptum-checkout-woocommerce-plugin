@@ -1,1 +1,1 @@
-# cryptum-checkout-woocommerce-plugin
+# cryptum-checkout-wordpress-plugin
