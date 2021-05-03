@@ -4,7 +4,7 @@
  * Plugin Name: Cryptum Checkout
  * Plugin URI: https://github.com/blockforce-official/cryptum-checkout-woocommerce-plugin
  * Description: Cryptum Checkout Payment Gateway for Woocommerce
- * Version: 0.0.1
+ * Version: 1.0.0
  * Author: Blockforce
  * Author URI: https://blockforce.in
  * Text Domain: woocommerce
@@ -19,6 +19,11 @@ defined('ABSPATH') or exit;
 
 // Make sure WooCommerce is active
 if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+	add_action('admin_notices', function () {
+		echo '<div id="setting-error-settings_updated" class="notice notice-error">
+			<p>' . __("Cryptum Checkout Plugin needs Woocommerce enabled to work correctly. Please install and/or enable Woocommerce plugin", 'cryptumcheckout-wc-gateway') . '</p>
+		</div>';
+	});
 	return;
 }
 
@@ -30,9 +35,6 @@ function cryptumcheckout_gateway_init()
 
 	class CryptumCheckout_WC_Gateway extends WC_Payment_Gateway
 	{
-		public static $log_enabled = true;
-		public static $log = false;
-
 		public function __construct()
 		{
 
@@ -58,6 +60,8 @@ function cryptumcheckout_gateway_init()
 			add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 			add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
 		}
+
+
 
 		/**
 		 * Initialize Gateway Settings Form Fields
@@ -146,8 +150,8 @@ function cryptumcheckout_gateway_init()
 				'storeId' => $this->storeId,
 				'ecommerceOrderId' => $order->get_id(),
 				'plugin' => 'wordpress',
-				'total' => $order->get_total(),
-				'currency' => $order->get_currency(),
+				'orderTotal' => $order->get_total(),
+				'orderCurrency' => $order->get_currency(),
 				'storeMarkupPercentage' => $this->storeMarkupPercentage,
 				'storeDiscountPercentage' => $this->storeDiscountPercentage,
 
@@ -254,7 +258,7 @@ function cryptumcheckout_gateway_init()
 						$error = "This order is currently being procesed or completed.";
 					}
 
-					if ($status == 'completed') {
+					if ($status == 'confirmed') {
 						try {
 							$order->update_status('processing',  __('Payment was successful ', 'cryptumcheckout-wc-gateway'));
 							$order->payment_complete();
@@ -292,7 +296,7 @@ function cryptumcheckout_gateway_init()
 								500
 							);
 						}
-					} elseif ($status == 'validating') {
+					} elseif ($status == 'on-hold') {
 						try {
 							$order->update_status('on-hold',  __('Payment awaiting to complete ', 'cryptumcheckout-wc-gateway'));
 							wp_send_json_error(
