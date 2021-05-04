@@ -53,9 +53,10 @@ function cryptumcheckout_gateway_init()
 			$this->storeId 			  		= $this->get_option('storeId');
 			$this->apikey 					= $this->get_option('apikey');
 			$this->productionEnvironment	= 'production' == $this->get_option('environment');
-			$this->url  					= $this->productionEnvironment ? 'https://api.cryptum.io/checkout' : 'https://api-dev.cryptum.io/checkout';
+			$this->backendUrl  				= $this->productionEnvironment ? 'https://api.cryptum.io/checkout' : 'https://92369571bec2.ngrok.io/checkout';
 			$this->storeMarkupPercentage	= $this->get_option('storeMarkupPercentage');
 			$this->storeDiscountPercentage	= $this->get_option('storeDiscountPercentage');
+			$this->frontendUrl				= $this->productionEnvironment ? 'https://example.com' : 'https://example.com';
 
 			add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 			add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
@@ -148,12 +149,15 @@ function cryptumcheckout_gateway_init()
 			);
 			$body = array(
 				'storeId' => $this->storeId,
-				'ecommerceOrderId' => $order->get_id(),
-				'plugin' => 'wordpress',
+				'ecommerceOrderId' => '' . $order->get_id(),
+				'ecommerce' => 'wordpress',
 				'orderTotal' => $order->get_total(),
 				'orderCurrency' => $order->get_currency(),
 				'storeMarkupPercentage' => $this->storeMarkupPercentage,
 				'storeDiscountPercentage' => $this->storeDiscountPercentage,
+				'cancelReturnUrl' => $order->get_cancel_order_url(),
+				'successReturnUrl' => $this->get_return_url($order),
+				'callbackUrl' => WC()->api_request_url(get_class($this)),
 
 				'firstName' => $this->coalesce_string($order->get_shipping_first_name(), $order->get_billing_first_name()),
 				'lastName' => $this->coalesce_string($order->get_shipping_last_name(), $order->get_billing_last_name()),
@@ -166,18 +170,31 @@ function cryptumcheckout_gateway_init()
 				'state' => $this->coalesce_string($order->get_shipping_state(), $order->get_billing_state())
 			);
 
-			$ret = wp_safe_remote_post($this->url . '/order', array(
+			$response = wp_safe_remote_post($this->backendUrl . '/order', array(
 				'body' => json_encode($body),
 				'headers' => $headers,
 				'data_format' => 'body',
 				'method' => 'POST',
 				'timeout' => 60
 			));
-			$response = json_decode(wp_remote_retrieve_body($ret), true);
-			if (is_wp_error($ret) or $response['status'] >= 400) {
-				$error_message = $response->get_error_message();
-				$this->_log(json_encode($ret, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-				wc_add_notice('Error processing Cryptum Checkout: ' . $error_message, 'error');
+
+			if (is_wp_error($response)) {
+				$this->_log(json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+				wc_add_notice(
+					__('Configuration error in Cryptum Checkout', 'cryptumcheckout-wc-gateway') .
+						'   Error code: ' . $response->get_error_code() .
+						'   Error message: ' . $response->get_error_message(),
+					'error'
+				);
+				return array('result' => 'error', 'redirect' => '');
+			}
+
+			$responseBody = json_decode($response['body'], true);
+
+			if (isset($responseBody['error'])) {
+				$error_message = $responseBody['error']['message'];
+				$this->_log(json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+				wc_add_notice(__('Error processing Cryptum Checkout', 'cryptumcheckout-wc-gateway') . ': ' . $error_message, 'error');
 				return array('result' => 'error', 'redirect' => '');
 			}
 
@@ -192,7 +209,7 @@ function cryptumcheckout_gateway_init()
 			// Return thankyou redirect
 			return array(
 				'result' 	=> 'success',
-				'redirect'	=> $this->get_request_url($order, $response)
+				'redirect'	=> $this->get_request_url($order, $responseBody)
 			);
 		}
 
@@ -210,7 +227,7 @@ function cryptumcheckout_gateway_init()
 			foreach ($form_params as $key => $value) {
 				$form_params_joins .= $key . '=' . $value . '&';
 			}
-			return $this->url . '?' . $form_params_joins;
+			return $this->frontendUrl . '?' . $form_params_joins;
 		}
 
 		public function callback_payment_handler()
@@ -225,25 +242,36 @@ function cryptumcheckout_gateway_init()
 				}
 
 				$raw_post = file_get_contents('php://input');
-				$decoded  = json_decode($raw_post, true);
-				$orderId = sanitize_text_field($decoded->orderId);
+				$decoded  = json_decode($raw_post);
+				$orderId = $decoded->orderId;
 
-				$response = wp_safe_remote_get($this->url . '/order/' . $orderId);
+				$response = wp_safe_remote_get("$this->backendUrl/order/$orderId", [
+					'headers' => [
+						'x-api-key' => $apikey
+					],
+					'timeout' => 60
+				]);
 				if (is_wp_error($response)) {
 					$error_message = $response->get_error_message();
 					$error = "Error verifying order at Cryptum Checkout: $error_message";
-					$this->_log("$error\n\n$this->url\n" . json_encode($raw_post, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+					$this->_log("$error\n\n$this->backendUrl\n" . json_encode($raw_post, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 					wp_send_json_error(array('message' => $error_message), 500);
 				}
 
 				$jsonOrder = json_decode(wp_remote_retrieve_body($response), true);
-				$storeId = $jsonOrder['storeId'];
-				$status = $jsonOrder['status'];
-				$ecommerceOrderId = $jsonOrder['ecommerceOrderId'];
+				if (isset($jsonOrder['error'])) {
+					$error_message = $jsonOrder['error']['message'];
+					$this->_log(json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+					wp_send_json_error(['message' => $error_message], 400);
+				}
+
+				$storeId = $jsonOrder['pluginCheckoutStoreId'];
+				$status = $jsonOrder['paymentStatus'];
+				$ecommerceOrderId = $jsonOrder['pluginCheckoutEcommerce']['orderId'];
 				$this->_log(json_encode($jsonOrder));
 
 				if (!isset($storeId) or $this->storeId != $storeId) {
-					wp_send_json_error(array('message' => 'Missing parameters'), 400);
+					wp_send_json_error(array('message' => 'Incorrect store id'), 400);
 				}
 
 				if (isset($ecommerceOrderId) and isset($status)) {
@@ -252,10 +280,19 @@ function cryptumcheckout_gateway_init()
 						$order->add_order_note(esc_html_e($message));
 					}
 
+					$error = null;
 					if (empty($order)) {
 						$error = "Payment callback received for non-existent order ID: $ecommerceOrderId";
-					} elseif ($order->has_status('completed')) {
+					} elseif ($order->has_status('completed') or $order->has_status('processing')) {
 						$error = "This order is currently being procesed or completed.";
+					}
+					if (isset($error)) {
+						wp_send_json_error(
+							array(
+								'message' => $error,
+							),
+							400
+						);
 					}
 
 					if ($status == 'confirmed') {
@@ -334,7 +371,7 @@ function cryptumcheckout_gateway_init()
 						}
 					} else {
 						$this->_log('Could not change order ' . $ecommerceOrderId . ' status to ' . $status);
-						wp_send_json_error(array('message' => 'Could not change order ' . $ecommerceOrderId . ' status to' . $status), 400);
+						wp_send_json_error(array('message' => 'Could not change order ' . $ecommerceOrderId . ' status to ' . $status), 400);
 					}
 				}
 				wp_send_json_error(array('message' => 'Invalid order ' . $ecommerceOrderId), 500);
