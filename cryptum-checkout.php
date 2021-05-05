@@ -53,10 +53,10 @@ function cryptumcheckout_gateway_init()
 			$this->storeId 			  		= $this->get_option('storeId');
 			$this->apikey 					= $this->get_option('apikey');
 			$this->productionEnvironment	= 'production' == $this->get_option('environment');
-			$this->backendUrl  				= $this->productionEnvironment ? 'https://api.cryptum.io/checkout' : 'https://cfccf1c11e85.ngrok.io/checkout';
+			$this->backendUrl  				= $this->productionEnvironment ? 'https://api.cryptum.io/checkout' : 'https://api-dev.cryptum.io/checkout';
 			$this->storeMarkupPercentage	= $this->get_option('storeMarkupPercentage');
 			$this->storeDiscountPercentage	= $this->get_option('storeDiscountPercentage');
-			$this->frontendUrl				= $this->productionEnvironment ? 'https://example.com' : 'https://example.com';
+			$this->frontendUrl				= $this->productionEnvironment ? 'https://checkout.cryptum.com' : 'https://checkout-dev.cryptum.com';
 
 			add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 			add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
@@ -145,12 +145,21 @@ function cryptumcheckout_gateway_init()
 				'x-api-key' => $this->apikey,
 				'Content-Type' => 'application/json; charset=utf-8'
 			);
+
+			$currency = $order->get_currency();
+			if ($currency !== 'USD') {
+				wc_add_notice(
+					__('Unsupported currency: ' . $currency . '(Only USD is supported for now)', 'cryptumcheckout-wc-gateway'),
+					'error'
+				);
+				return array('result' => 'error', 'redirect' => '');
+			}
 			$body = array(
 				'storeId' => $this->storeId,
 				'ecommerceOrderId' => '' . $order->get_id(),
 				'ecommerce' => 'wordpress',
 				'orderTotal' => $order->get_total(),
-				'orderCurrency' => $order->get_currency(),
+				'orderCurrency' => $currency,
 				'storeMarkupPercentage' => $this->storeMarkupPercentage,
 				'storeDiscountPercentage' => $this->storeDiscountPercentage,
 				'cancelReturnUrl' => wp_specialchars_decode($order->get_cancel_order_url()),
