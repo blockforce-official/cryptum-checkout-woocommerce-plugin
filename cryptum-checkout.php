@@ -53,7 +53,7 @@ function cryptumcheckout_gateway_init()
 			$this->storeId 			  		= $this->get_option('storeId');
 			$this->apikey 					= $this->get_option('apikey');
 			$this->productionEnvironment	= 'production' == $this->get_option('environment');
-			$this->backendUrl  				= $this->productionEnvironment ? 'https://api.cryptum.io/checkout' : 'https://92369571bec2.ngrok.io/checkout';
+			$this->backendUrl  				= $this->productionEnvironment ? 'https://api.cryptum.io/checkout' : 'https://cfccf1c11e85.ngrok.io/checkout';
 			$this->storeMarkupPercentage	= $this->get_option('storeMarkupPercentage');
 			$this->storeDiscountPercentage	= $this->get_option('storeDiscountPercentage');
 			$this->frontendUrl				= $this->productionEnvironment ? 'https://example.com' : 'https://example.com';
@@ -61,8 +61,6 @@ function cryptumcheckout_gateway_init()
 			add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 			add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
 		}
-
-
 
 		/**
 		 * Initialize Gateway Settings Form Fields
@@ -155,8 +153,8 @@ function cryptumcheckout_gateway_init()
 				'orderCurrency' => $order->get_currency(),
 				'storeMarkupPercentage' => $this->storeMarkupPercentage,
 				'storeDiscountPercentage' => $this->storeDiscountPercentage,
-				'cancelReturnUrl' => $order->get_cancel_order_url(),
-				'successReturnUrl' => $this->get_return_url($order),
+				'cancelReturnUrl' => wp_specialchars_decode($order->get_cancel_order_url()),
+				'successReturnUrl' => wp_specialchars_decode($this->get_return_url($order)),
 				'callbackUrl' => WC()->api_request_url(get_class($this)),
 
 				'firstName' => $this->coalesce_string($order->get_shipping_first_name(), $order->get_billing_first_name()),
@@ -216,8 +214,8 @@ function cryptumcheckout_gateway_init()
 		function get_request_url($order, $createOrderResponse)
 		{
 			$form_params = array(
-				'cancelReturnUrl' => $order->get_cancel_order_url(),
-				'successReturnUrl' => $this->get_return_url($order),
+				'cancelReturnUrl' => urlencode(wp_specialchars_decode($order->get_cancel_order_url())),
+				'successReturnUrl' => urlencode(wp_specialchars_decode($this->get_return_url($order))),
 				'callbackUrl' => WC()->api_request_url(get_class($this)),
 				'sessionToken' => $createOrderResponse['sessionToken'],
 				'orderId' => $createOrderResponse['id'],
@@ -244,6 +242,7 @@ function cryptumcheckout_gateway_init()
 				$raw_post = file_get_contents('php://input');
 				$decoded  = json_decode($raw_post);
 				$orderId = $decoded->orderId;
+				$message = $decoded->message;
 
 				$response = wp_safe_remote_get("$this->backendUrl/order/$orderId", [
 					'headers' => [
@@ -353,6 +352,7 @@ function cryptumcheckout_gateway_init()
 						}
 					} elseif ($status == 'failed') {
 						try {
+							wc_increase_stock_levels($order);
 							$order->update_status('failed',  __('Payment failed', 'cryptumcheckout-wc-gateway'));
 							wp_send_json_error(
 								array(
