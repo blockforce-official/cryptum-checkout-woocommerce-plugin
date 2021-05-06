@@ -43,6 +43,7 @@ function cryptumcheckout_gateway_init()
 			$this->has_fields         = false;
 			$this->method_title       = __('Cryptum Checkout', 'cryptumcheckout-wc-gateway');
 			$this->method_description = __('Connects your WooCommerce store to the Cryptum Checkout Payment Gateway.', 'woocommerce');
+			$this->description		  = __('Pay with Cryptum, you will be redirected to Cryptum Checkout to finish your order payment');
 
 			// Load the settings.
 			$this->init_form_fields();
@@ -60,6 +61,25 @@ function cryptumcheckout_gateway_init()
 
 			add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 			add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
+		}
+
+		public function payment_fields()
+		{
+			if (!$this->description) {
+				$desc = '';
+			} else {
+				$desc = wpautop(wptexturize($this->description));
+			}
+			$html = "<div class=''>$desc</div>";
+			echo $html;
+		}
+
+		public function get_icon()
+		{
+			$icon_html =
+				'<img src="' . plugins_url('assets/images/cryptum-checkout-logo.png', __FILE__) . 
+				'" style="padding: 0; margin-top: -10px; max-height:55px;" />';
+			return apply_filters('woocommerce_gateway_icon', $icon_html, $this->id);
 		}
 
 		/**
