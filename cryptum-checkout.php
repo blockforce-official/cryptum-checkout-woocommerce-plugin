@@ -57,7 +57,7 @@ function cryptumcheckout_gateway_init()
 			$this->backendUrl  				= $this->productionEnvironment ? 'https://api.cryptum.io/checkout' : 'https://api-dev.cryptum.io/checkout';
 			$this->storeMarkupPercentage	= $this->get_option('storeMarkupPercentage');
 			$this->storeDiscountPercentage	= $this->get_option('storeDiscountPercentage');
-			$this->frontendUrl				= $this->productionEnvironment ? 'https://plugin-checkout.cryptum.com' : 'https://plugin-checkout-dev.cryptum.com';
+			$this->frontendUrl				= $this->productionEnvironment ? 'https://plugin-checkout.cryptum.io/public/payment-details.html' : 'https://plugin-checkout-dev.cryptum.io/public/payment-details.html';
 
 			add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 			add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
@@ -77,7 +77,7 @@ function cryptumcheckout_gateway_init()
 		public function get_icon()
 		{
 			$icon_html =
-				'<img src="' . plugins_url('assets/images/cryptum-checkout-logo.png', __FILE__) . 
+				'<img src="' . plugins_url('assets/images/cryptum-checkout-logo.png', __FILE__) .
 				'" style="padding: 0; margin-top: -10px; max-height:55px;" />';
 			return apply_filters('woocommerce_gateway_icon', $icon_html, $this->id);
 		}
