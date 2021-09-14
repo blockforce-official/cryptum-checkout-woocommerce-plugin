@@ -248,7 +248,8 @@ function cryptumcheckout_gateway_init()
 				'callbackUrl' => WC()->api_request_url(get_class($this)),
 				'sessionToken' => $createOrderResponse['sessionToken'],
 				'orderId' => $createOrderResponse['id'],
-				'ecommerceOrderId' => $order->get_id()
+				'ecommerceOrderId' => $order->get_id(),
+				'environment' => $this->get_option('environment'),
 			);
 			$form_params_joins = '';
 			foreach ($form_params as $key => $value) {
