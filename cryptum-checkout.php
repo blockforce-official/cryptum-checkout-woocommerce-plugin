@@ -176,18 +176,16 @@ function cryptumcheckout_gateway_init()
 				);
 				return array('result' => 'error', 'redirect' => '');
 			}
+
 			$body = array(
 				'store' => $this->storeId,
 				'ecommerce' => 'wordpress',
 				'orderId' => '' . $order->get_id(),
 				'orderTotal' => $order->get_total(),
 				'orderCurrency' => $currency,
-				'storeMarkupPercentage' => $this->storeMarkupPercentage,
-				'storeDiscountPercentage' => $this->storeDiscountPercentage,
 				'cancelReturnUrl' => wp_specialchars_decode($order->get_cancel_order_url()),
 				'successReturnUrl' => wp_specialchars_decode($this->get_return_url($order)),
 				'callbackUrl' => WC()->api_request_url(get_class($this)),
-
 				'deliveryInfo' => array(
 					'firstName' => $this->coalesce_string($order->get_shipping_first_name(), $order->get_billing_first_name()),
 					'lastName' => $this->coalesce_string($order->get_shipping_last_name(), $order->get_billing_last_name()),
@@ -237,7 +235,8 @@ function cryptumcheckout_gateway_init()
 				'callbackUrl' => WC()->api_request_url(get_class($this)),
 				'sessionToken' => $createOrderResponse['sessionToken'],
 				'orderId' => $createOrderResponse['id'],
-				'ecommerceOrderId' => $order->get_id()
+				'ecommerceOrderId' => $order->get_id(),
+				'environment' => $this->get_option('environment'),
 			);
 			$form_params_joins = '';
 			foreach ($form_params as $key => $value) {
@@ -247,7 +246,7 @@ function cryptumcheckout_gateway_init()
 		}
 
 		public function callback_payment_handler()
-		{
+		{	
 			if ('OPTIONS' == $_SERVER['REQUEST_METHOD']) {
 				status_header(200);
 				exit();
