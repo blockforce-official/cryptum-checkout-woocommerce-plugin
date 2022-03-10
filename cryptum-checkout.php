@@ -179,8 +179,8 @@ function cryptumcheckout_gateway_init()
 
 			$body = array(
 				'store' => $this->storeId,
-				'ecommerce' => 'wordpress',
-				'orderId' => '' . $order->get_id(),
+				'ecommerceType' => 'wordpress',
+				'ecommerceOrderId' => '' . $order->get_id(),
 				'orderTotal' => $order->get_total(),
 				'orderCurrency' => $currency,
 				'cancelReturnUrl' => wp_specialchars_decode($order->get_cancel_order_url()),
