@@ -4,7 +4,7 @@
  * Plugin Name: Cryptum Checkout
  * Plugin URI: https://github.com/blockforce-official/cryptum-checkout-woocommerce-plugin
  * Description: Cryptum Checkout Payment Gateway for Woocommerce
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Blockforce
  * Author URI: https://blockforce.in
  * Text Domain: woocommerce
@@ -59,7 +59,7 @@ function cryptumcheckout_gateway_init()
 			$this->backendUrl  				= CryptumCheckoutUtils::get_cryptum_url($this->get_option('environment')) . '/plugins';
 			$this->storeMarkupPercentage	= $this->get_option('storeMarkupPercentage');
 			$this->storeDiscountPercentage	= $this->get_option('storeDiscountPercentage');
-			$this->frontendUrl				= $this->productionEnvironment ? 'https://plugin-checkout.cryptum.io/public/payment-details.html' : 'https://plugin-checkout-dev.cryptum.io/public/payment-details.html';
+			$this->frontendUrl				= $this->productionEnvironment ? 'https://plugin-checkout.cryptum.io/public/payment-details/' : 'https://plugin-checkout-dev.cryptum.io/public/payment-details/';
 
 			add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 			add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
@@ -260,6 +260,8 @@ function cryptumcheckout_gateway_init()
 				$decoded  = json_decode($raw_post);
 				$orderId = $decoded->orderId;
 				$message = $decoded->message;
+				$ecommerceOrderId = $decoded->ecommerceOrderId;
+				$storeId = $decoded->storeId;
 
 				$response = CryptumCheckoutUtils::request($this->backendUrl . '/orders/' . $orderId, [
 					'headers' => [
@@ -273,9 +275,7 @@ function cryptumcheckout_gateway_init()
 					wp_send_json_error(['message' => $error_message], 400);
 				}
 
-				$storeId = $response['pluginCheckoutStoreId'];
 				$status = $response['paymentStatus'];
-				$ecommerceOrderId = $response['pluginCheckoutEcommerce']['orderId'];
 				$this->_log(json_encode($response));
 
 				if (!isset($storeId) or $this->storeId != $storeId) {

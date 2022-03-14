@@ -15,7 +15,7 @@ This plugin connects your WooCommerce store to the Cryptum Checkout Payment Gate
 = Minimum Requirements =
 * PHP 7.0 or greater is recommended
 * WordPress 5.5 or greater is recommended
-* WooCommerce 5.0 or greater is recommended
+* WooCommerce 6.0 or greater is recommended
 
 
 * To do an automatic install of the Cryptum Checkout WooCommerce Gateway Plugin, log in to your WordPress dashboard, navigate to the Plugins menu, and click “Add New.”
