@@ -4,18 +4,31 @@
  * Plugin Name: Cryptum Checkout
  * Plugin URI: https://github.com/blockforce-official/cryptum-checkout-woocommerce-plugin
  * Description: Cryptum Checkout Payment Gateway for Woocommerce
- * Version: 1.0.1
+ * Version: 2.0.0
  * Author: Blockforce
  * Author URI: https://blockforce.in
  * Text Domain: woocommerce
- * Domain Path: /i18n/languages/
+ * Domain Path: /languages/
  * Requires at least: 5.5
  * Requires PHP: 7.0
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
 
+use Cryptum\Checkout\Utils\Api;
+use Cryptum\Checkout\Utils\Log;
+
 defined('ABSPATH') or exit;
+
+if (defined('CRYPTUM_CHECKOUT_PATH')) {
+	return;
+}
+
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+define('CRYPTUM_CHECKOUT_PATH', dirname(__FILE__));
+define('CRYPTUM_CHECKOUT_PLUGIN_DIR', plugin_dir_url(__FILE__));
+define('TEXT_DOMAIN', 'cryptum-checkout');
 
 // Make sure WooCommerce is active
 if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
@@ -27,7 +40,21 @@ if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get
 	return;
 }
 
-require_once 'utils.php';
+require_once(plugin_dir_path(__FILE__) . '/lib/autoload.php');
+
+function cryptumcheckout_add_to_gateways($gateways)
+{
+	$gateways[] = 'CryptumCheckout_Payment_Gateway';
+	return $gateways;
+}
+
+function cryptumcheckout_set_plugin_action_links($links)
+{
+	$plugin_links = array(
+		'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=cryptumcheckout_gateway') . '">' . __('Configure', 'cryptumcheckout-wc-gateway') . '</a>'
+	);
+	return array_merge($plugin_links, $links);
+}
 
 function cryptumcheckout_gateway_init()
 {
@@ -35,34 +62,67 @@ function cryptumcheckout_gateway_init()
 		return;
 	}
 
-	class CryptumCheckout_WC_Gateway extends WC_Payment_Gateway
+	class CryptumCheckout_Payment_Gateway extends WC_Payment_Gateway
 	{
 		public function __construct()
 		{
-
 			$this->id                 = 'cryptumcheckout_gateway';
-			$this->icon               = WP_PLUGIN_URL . '/' . plugin_basename(dirname(__FILE__)) . '/assets/images/cryptum-checkout-logo.png';
+			$this->icon               = CRYPTUM_CHECKOUT_PLUGIN_DIR . '/assets/images/cryptum-checkout-logo.png';
 			$this->has_fields         = false;
-			$this->method_title       = __('Cryptum Checkout', 'cryptumcheckout-wc-gateway');
-			$this->method_description = __('Connects your WooCommerce store to the Cryptum Checkout Payment Gateway.', 'woocommerce');
-			$this->description		  = __('Pay with Cryptum, you will be redirected to Cryptum Checkout to finish your order payment');
+			$this->method_title       = __('Cryptum Checkout');
+			$this->method_description = __('Connects your WooCommerce store to the Cryptum Checkout Payment Gateway.', 'cryptum-checkout');
+			$this->description		  = __('Pay with Cryptum, you will be redirected to Cryptum Checkout to finish your order payment', 'cryptum-checkout');
 
 			// Load the settings.
 			$this->init_form_fields();
 			$this->init_settings();
 
 			// Define user set variables
+			$environment = $this->get_option('environment');
 			$this->title 					= $this->get_option('title');
 			$this->storeId 			  		= $this->get_option('storeId');
 			$this->apikey 					= $this->get_option('apikey');
-			$this->productionEnvironment	= 'production' == $this->get_option('environment');
-			$this->backendUrl  				= CryptumCheckoutUtils::get_cryptum_url($this->get_option('environment')) . '/plugins';
+			$this->productionEnvironment	= 'production' == $environment;
+			$this->backendUrl  				= Api::get_cryptum_store_url($environment);
 			$this->storeMarkupPercentage	= $this->get_option('storeMarkupPercentage');
 			$this->storeDiscountPercentage	= $this->get_option('storeDiscountPercentage');
-			$this->frontendUrl				= $this->productionEnvironment ? 'https://plugin-checkout.cryptum.io/public/payment-details/' : 'https://plugin-checkout-dev.cryptum.io/public/payment-details/';
+			$this->frontendUrl				= Api::get_cryptum_checkout_frontend($environment);
 
+			$this->add_hooks();
+		}
+
+		private function add_hooks()
+		{
 			add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 			add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
+		}
+
+		public function process_admin_options()
+		{
+			$url = Api::get_cryptum_store_url($this->get_option('environment'));
+			$response = Api::request("{$url}/stores/verification", array(
+				'body' => json_encode(array(
+					'storeId' => $this->storeId
+				)),
+				'headers' => array(
+					'content-type' => 'application/json',
+					'x-api-key' => $this->apikey
+				),
+				'data_format' => 'body',
+				'method' => 'POST',
+				'timeout' => 60
+			));
+			if (isset($response['error'])) {
+				$error_message = $response['message'];
+				add_action('admin_notices', function () use ($error_message) {
+					echo '<div class="notice notice-error">
+						<p>' . __($error_message, 'cryptum-checkout') . '</p>
+					</div>';
+				});
+				return false;
+			}
+
+			parent::process_admin_options();
 		}
 
 		public function payment_fields()
@@ -94,9 +154,9 @@ function cryptumcheckout_gateway_init()
 			$this->form_fields = apply_filters('cryptumcheckout_form_fields', array(
 
 				'enabled' => array(
-					'title'   => __('Enable/Disable', 'cryptumcheckout-wc-gateway'),
+					'title'   => __('Enable/Disable', 'cryptum-checkout'),
 					'type'    => 'checkbox',
-					'label'   => __('Enable Cryptum E-commerce Checkout', 'cryptumcheckout-wc-gateway'),
+					'label'   => __('Enable Cryptum E-commerce Checkout', 'cryptum-checkout'),
 				),
 				'title' => array(
 					'title' => __('Title', 'woothemes'),
@@ -105,40 +165,40 @@ function cryptumcheckout_gateway_init()
 					'default' => __('Cryptum Checkout', 'woothemes')
 				),
 				'environment' => array(
-					'title' => __('Environment', 'cryptumcheckout-wc-gateway'),
+					'title' => __('Environment', 'cryptum-checkout'),
 					'type' => 'select',
-					'description' => __('Choose your environment. The Test environment should be used for testing only.', 'cryptumcheckout-wc-gateway'),
+					'description' => __('Choose your environment. The Test environment should be used for testing only.', 'cryptum-checkout'),
 					'default' => 'production',
 					'options' => array(
-						'production' => __('Production', 'cryptumcheckout-wc-gateway'),
-						'test' => __('Test', 'cryptumcheckout-wc-gateway'),
+						'production' => __('Production', 'cryptum-checkout'),
+						'test' => __('Test', 'cryptum-checkout'),
 					),
 				),
 				'storeId' => array(
-					'title'       => __('Store ID', 'cryptumcheckout-wc-gateway'),
+					'title'       => __('Store ID', 'cryptum-checkout'),
 					'type'        => 'text',
-					'description' => __('Enter your Cryptum Checkout Store ID (Automatically Generated in Cryptum Dashboard, Woocommerce Section.)', 'cryptumcheckout-wc-gateway'),
-					'default'     => __('', 'cryptumcheckout-wc-gateway'),
+					'description' => __('Enter your Cryptum Checkout Store ID (Automatically Generated in Cryptum Dashboard, Woocommerce Section.)', 'cryptum-checkout'),
+					'default'     => __('', 'cryptum-checkout'),
 				),
 				'apikey' => array(
-					'title'       => __('API Key', 'cryptumcheckout-wc-gateway'),
+					'title'       => __('API Key', 'cryptum-checkout'),
 					'type'        => 'text',
 					'description' => __('Enter your Cryptum API Key (Generated in Cryptum Dashboard, API Keys Section)'),
-					'default'     => __('', 'cryptumcheckout-wc-gateway'),
+					'default'     => __('', 'cryptum-checkout'),
 				),
 
 				'storeMarkupPercentage' => array(
-					'title'       => __('Store Markup Percentage', 'cryptumcheckout-wc-gateway'),
+					'title'       => __('Store Markup Percentage', 'cryptum-checkout'),
 					'type'        => 'text',
-					'description' => __('Enter your percentage markup value', 'cryptumcheckout-wc-gateway'),
-					'default'     => __('0', 'cryptumcheckout-wc-gateway'),
+					'description' => __('Enter your percentage markup value', 'cryptum-checkout'),
+					'default'     => __('0', 'cryptum-checkout'),
 				),
 
 				'storeDiscountPercentage' => array(
-					'title'       => __('Store Discount Percentage', 'cryptumcheckout-wc-gateway'),
+					'title'       => __('Store Discount Percentage', 'cryptum-checkout'),
 					'type'        => 'text',
 					'description' => __('Enter your percentage discount value'),
-					'default'     => __('0', 'cryptumcheckout-wc-gateway'),
+					'default'     => __('0', 'cryptum-checkout'),
 				),
 			));
 		}
@@ -171,7 +231,7 @@ function cryptumcheckout_gateway_init()
 			$currency = $order->get_currency();
 			if ($currency !== 'USD') {
 				wc_add_notice(
-					__('Unsupported currency: ' . $currency . '(Only USD is supported for now)', 'cryptumcheckout-wc-gateway'),
+					__('Unsupported currency: ' . $currency . '(Only USD is supported for now)', 'cryptum-checkout'),
 					'error'
 				);
 				return array('result' => 'error', 'redirect' => '');
@@ -199,7 +259,7 @@ function cryptumcheckout_gateway_init()
 				)
 			);
 
-			$response = CryptumCheckoutUtils::request($this->backendUrl . '/orders/checkout', array(
+			$response = Api::request($this->backendUrl . '/orders/checkout', array(
 				'body' => json_encode($body),
 				'headers' => $headers,
 				'data_format' => 'body',
@@ -208,11 +268,11 @@ function cryptumcheckout_gateway_init()
 			));
 			if (isset($response['error'])) {
 				$error_message = $response['message'];
-				wc_add_notice(__('Error processing Cryptum Checkout', 'cryptumcheckout-wc-gateway') . ': ' . $error_message, 'error');
+				wc_add_notice(__('Error processing Cryptum Checkout', 'cryptum-checkout') . ': ' . $error_message, 'error');
 				return array('result' => 'error', 'redirect' => '');
 			}
 
-			$order->update_status('pending', __('Pending Cryptum Checkout payment', 'cryptumcheckout-wc-gateway'));
+			$order->update_status('pending', __('Pending Cryptum Checkout payment', 'cryptum-checkout'));
 
 			// Reduce stock levels
 			wc_reduce_stock_levels($order_id);
@@ -246,7 +306,7 @@ function cryptumcheckout_gateway_init()
 		}
 
 		public function callback_payment_handler()
-		{	
+		{
 			if ('OPTIONS' == $_SERVER['REQUEST_METHOD']) {
 				status_header(200);
 				exit();
@@ -263,7 +323,7 @@ function cryptumcheckout_gateway_init()
 				$ecommerceOrderId = $decoded->ecommerceOrderId;
 				$storeId = $decoded->storeId;
 
-				$response = CryptumCheckoutUtils::request($this->backendUrl . '/orders/' . $orderId, [
+				$response = Api::request($this->backendUrl . '/orders/' . $orderId, [
 					'headers' => [
 						'x-api-key' => $apikey
 					],
@@ -276,7 +336,7 @@ function cryptumcheckout_gateway_init()
 				}
 
 				$status = $response['paymentStatus'];
-				$this->_log(json_encode($response));
+				Log::info(json_encode($response));
 
 				if (!isset($storeId) or $this->storeId != $storeId) {
 					wp_send_json_error(array('message' => 'Incorrect store id'), 400);
@@ -305,7 +365,7 @@ function cryptumcheckout_gateway_init()
 
 					if ($status == 'confirmed') {
 						try {
-							$order->update_status('processing',  __('Payment was successful ', 'cryptumcheckout-wc-gateway'));
+							$order->update_status('processing',  __('Payment was successful ', 'cryptum-checkout'));
 							$order->payment_complete();
 							wp_send_json_error(
 								array(
@@ -325,7 +385,7 @@ function cryptumcheckout_gateway_init()
 					} elseif ($status == 'cancelled') {
 						try {
 							wc_increase_stock_levels($order);
-							$order->update_status('cancelled',  __('Payment was cancelled ', 'cryptumcheckout-wc-gateway'));
+							$order->update_status('cancelled',  __('Payment was cancelled ', 'cryptum-checkout'));
 							wp_send_json_error(
 								array(
 									'message' => 'Cancelled payment',
@@ -343,7 +403,7 @@ function cryptumcheckout_gateway_init()
 						}
 					} elseif ($status == 'on-hold') {
 						try {
-							$order->update_status('on-hold',  __('Payment awaiting to complete ', 'cryptumcheckout-wc-gateway'));
+							$order->update_status('on-hold',  __('Payment awaiting to complete ', 'cryptum-checkout'));
 							wp_send_json_error(
 								array(
 									'message' => 'Payment awaiting to complete',
@@ -362,7 +422,7 @@ function cryptumcheckout_gateway_init()
 					} elseif ($status == 'failed') {
 						try {
 							wc_increase_stock_levels($order);
-							$order->update_status('failed',  __('Payment failed', 'cryptumcheckout-wc-gateway'));
+							$order->update_status('failed',  __('Payment failed', 'cryptum-checkout'));
 							wp_send_json_error(
 								array(
 									'message' => 'Payment failed',
@@ -379,37 +439,16 @@ function cryptumcheckout_gateway_init()
 							);
 						}
 					} else {
-						$this->_log('Could not change order ' . $ecommerceOrderId . ' status to ' . $status);
+						Log::info('Could not change order ' . $ecommerceOrderId . ' status to ' . $status);
 						wp_send_json_error(array('message' => 'Could not change order ' . $ecommerceOrderId . ' status to ' . $status), 400);
 					}
 				}
 				wp_send_json_error(array('message' => 'Invalid order ' . $ecommerceOrderId), 500);
 			}
 		}
-
-		private static function _log($message, $level = 'info')
-		{
-			wc_get_logger()->log($level, $message, array('source' => 'cryptumcheckout'));
-		}
 	}
 }
 
-function cryptumcheckout_add_to_gateways($gateways)
-{
-	$gateways[] = 'CryptumCheckout_WC_Gateway';
-	return $gateways;
-}
 add_filter('woocommerce_payment_gateways', 'cryptumcheckout_add_to_gateways');
-
-function cryptumcheckout_gateway_plugin_links($links)
-{
-
-	$plugin_links = array(
-		'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=cryptumcheckout_gateway') . '">' . __('Configure', 'cryptumcheckout-wc-gateway') . '</a>'
-	);
-
-	return array_merge($plugin_links, $links);
-}
-add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'cryptumcheckout_gateway_plugin_links');
-
+add_filter('plugin_action_links_' . plugin_basename(CRYPTUM_CHECKOUT_PLUGIN_DIR), 'cryptumcheckout_set_plugin_action_links');
 add_action('plugins_loaded', 'cryptumcheckout_gateway_init', 11);
