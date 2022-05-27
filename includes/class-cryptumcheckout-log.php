@@ -1,8 +1,6 @@
 <?php
 
-namespace Cryptum\Checkout\Utils;
-
-class Log
+class CryptumCheckout_Log
 {
 	public static function log($message, $level = 'info')
 	{

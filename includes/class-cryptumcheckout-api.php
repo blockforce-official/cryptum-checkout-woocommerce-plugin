@@ -1,12 +1,12 @@
 <?php
 
-namespace Cryptum\Checkout\Utils;
+require_once('class-cryptumcheckout-log.php');
 
 // @codeCoverageIgnoreStart
 defined('ABSPATH') or exit;
 // @codeCoverageIgnoreEnd
 
-class Api
+class CryptumCheckout_Api
 {
 	static function get_cryptum_url($environment)
 	{
