@@ -55,16 +55,16 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 		CryptumCheckout_Api::set_options($this->apikey, $this->get_option('environment'));
 		$response = CryptumCheckout_Api::verify_store($this->storeId);
 		if (isset($response['error'])) {
-			$error_message = $response['message'];
-			add_action('admin_notices', function () use ($error_message) {
+			CryptumCheckout_Log::info($response);
+			add_action('admin_notices', function () {
 				echo '<div class="notice notice-error">
-						<p>' . __($error_message, 'cryptum-checkout') . '</p>
+						<p>' . __('Store not configured yet or not existent. You must configure a store in Cryptum dashboard first', 'cryptum-checkout') . '</p>
 					</div>';
 			});
-			return false;
+			return;
 		}
 
-		parent::process_admin_options();
+		return parent::process_admin_options();
 	}
 
 	public function payment_fields()
