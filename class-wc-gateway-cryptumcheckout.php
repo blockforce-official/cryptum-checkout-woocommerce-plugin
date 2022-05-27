@@ -52,19 +52,8 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 
 	public function process_admin_options()
 	{
-		$url = CryptumCheckout_Api::get_cryptum_store_url($this->get_option('environment'));
-		$response = CryptumCheckout_Api::request("{$url}/stores/verification", array(
-			'body' => json_encode(array(
-				'storeId' => $this->storeId
-			)),
-			'headers' => array(
-				'content-type' => 'application/json',
-				'x-api-key' => $this->apikey
-			),
-			'data_format' => 'body',
-			'method' => 'POST',
-			'timeout' => 60
-		));
+		CryptumCheckout_Api::set_options($this->apikey, $this->get_option('environment'));
+		$response = CryptumCheckout_Api::verify_store($this->storeId);
 		if (isset($response['error'])) {
 			$error_message = $response['message'];
 			add_action('admin_notices', function () use ($error_message) {
@@ -171,13 +160,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 	 */
 	public function process_payment($order_id)
 	{
-
 		$order = wc_get_order($order_id);
-
-		$headers = array(
-			'x-api-key' => $this->apikey,
-			'Content-Type' => 'application/json; charset=utf-8'
-		);
 
 		$currency = $order->get_currency();
 		if ($currency != 'USD' and $currency != 'BRL') {
@@ -209,14 +192,8 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 				'state' => $this->coalesce_string($order->get_shipping_state(), $order->get_billing_state())
 			)
 		);
-
-		$response = CryptumCheckout_Api::request($this->backendUrl . '/orders/checkout', array(
-			'body' => json_encode($body),
-			'headers' => $headers,
-			'data_format' => 'body',
-			'method' => 'POST',
-			'timeout' => 60
-		));
+		CryptumCheckout_Api::set_options($this->apikey, $this->get_option('environment'));
+		$response = CryptumCheckout_Api::create_order($body);
 		if (isset($response['error'])) {
 			$error_message = $response['message'];
 			wc_add_notice(__('Error processing Cryptum Checkout', 'cryptum-checkout') . ': ' . $error_message, 'error');
@@ -274,13 +251,8 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			$ecommerceOrderId = $decoded->ecommerceOrderId;
 			$storeId = $decoded->storeId;
 
-			$response = CryptumCheckout_Api::request($this->backendUrl . '/orders/' . $orderId, [
-				'headers' => [
-					'x-api-key' => $apikey
-				],
-				'method' => 'GET',
-				'timeout' => 60
-			]);
+			CryptumCheckout_Api::set_options($this->apikey, $this->get_option('environment'));
+			$response = CryptumCheckout_Api::get_order($orderId);
 			if (isset($response['error'])) {
 				$error_message = $response['message'];
 				wp_send_json_error(['message' => $error_message], 400);

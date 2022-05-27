@@ -8,6 +8,9 @@ defined('ABSPATH') or exit;
 
 class CryptumCheckout_Api
 {
+	static $apikey;
+	static $environment;
+
 	static function get_cryptum_url($environment)
 	{
 		return $environment == 'production' ? 'https://api.cryptum.io' : 'https://api-dev.cryptum.io';
@@ -21,11 +24,17 @@ class CryptumCheckout_Api
 		return $environment == 'production' ? 'https://plugin-checkout.cryptum.io/public/payment-details/' : 'https://plugin-checkout-dev.cryptum.io/public/payment-details/';
 	}
 
+	static function set_options($apikey, $environment)
+	{
+		CryptumCheckout_Api::$apikey = $apikey;
+		CryptumCheckout_Api::$environment = $environment;
+	}
+
 	static function request($url, $args = array())
 	{
 		$response = wp_safe_remote_request($url, $args);
 		if (is_wp_error($response)) {
-			Log::error(json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+			CryptumCheckout_Log::error(json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 			return [
 				'error' => 'Error',
 				'message' => $response->get_error_message()
@@ -36,12 +45,56 @@ class CryptumCheckout_Api
 		$responseBody = json_decode($response['body'], true);
 		if (isset($responseBody['error']) || (isset($responseObj) && $responseObj['code'] >= 400)) {
 			$error_message = isset($responseBody['error']['message']) ? $responseBody['error']['message'] : $responseBody['message'];
-			Log::error(json_encode($responseBody, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+			CryptumCheckout_Log::error(json_encode($responseBody, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 			return [
 				'error' => 'Error',
 				'message' => $error_message
 			];
 		}
 		return $responseBody;
+	}
+
+	static function verify_store($storeId)
+	{
+		$url = CryptumCheckout_Api::get_cryptum_store_url(CryptumCheckout_Api::$environment);
+		return CryptumCheckout_Api::request("{$url}/stores/verification", array(
+			'body' => json_encode(array(
+				'storeId' => $storeId,
+				'plugin' => 'checkout',
+				'ecommerceType' => 'wordpress'
+			)),
+			'headers' => array(
+				'content-type' => 'application/json',
+				'x-api-key' => CryptumCheckout_Api::$apikey
+			),
+			'data_format' => 'body',
+			'method' => 'POST',
+			'timeout' => 60
+		));
+	}
+	static function create_order($body)
+	{
+		$url = CryptumCheckout_Api::get_cryptum_store_url(CryptumCheckout_Api::$environment);
+		return CryptumCheckout_Api::request($url . '/orders/checkout', array(
+			'body' => json_encode($body),
+			'headers' => array(
+				'x-api-key' => CryptumCheckout_Api::$apikey,
+				'Content-Type' => 'application/json; charset=utf-8'
+			),
+			'data_format' => 'body',
+			'method' => 'POST',
+			'timeout' => 60
+		));
+	}
+	static function get_order($orderId)
+	{
+		$url = CryptumCheckout_Api::get_cryptum_store_url(CryptumCheckout_Api::$environment);
+		return CryptumCheckout_Api::request($url . '/orders/' . $orderId, [
+			'headers' => [
+				'x-api-key' => CryptumCheckout_Api::$apikey
+			],
+			'method' => 'GET',
+			'timeout' => 60
+		]);
 	}
 }
