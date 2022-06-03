@@ -4,11 +4,11 @@
  * Plugin Name: Cryptum Checkout
  * Plugin URI: https://github.com/blockforce-official/cryptum-checkout-woocommerce-plugin
  * Description: Cryptum Checkout Payment Gateway for Woocommerce
- * Version: 2.0.0
+ * Version: 2.0.1
  * Author: Blockforce
  * Author URI: https://blockforce.in
- * Text Domain: woocommerce
- * Domain Path: /languages/
+ * Text Domain: cryptum-checkout
+ * Domain Path: /languages
  * Requires at least: 5.5
  * Requires PHP: 7.0
  * License: GNU General Public License v3.0
@@ -27,7 +27,7 @@ define('TEXT_DOMAIN', 'cryptum-checkout');
 if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
 	add_action('admin_notices', function () {
 		echo '<div id="setting-error-settings_updated" class="notice notice-error">
-			<p>' . __("Cryptum Checkout Plugin needs Woocommerce enabled to work correctly. Please install and/or enable Woocommerce plugin", 'cryptumcheckout-wc-gateway') . '</p>
+			<p>' . __("Cryptum Checkout Plugin needs Woocommerce enabled to work correctly. Please install and/or enable Woocommerce plugin", 'cryptum-checkout') . '</p>
 		</div>';
 	});
 	return;
@@ -42,7 +42,7 @@ function cryptumcheckout_add_to_gateways($gateways)
 function cryptumcheckout_set_plugin_action_links($links)
 {
 	$plugin_links = array(
-		'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=cryptumcheckout_gateway') . '">' . __('Configure', 'cryptumcheckout-wc-gateway') . '</a>'
+		'<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=cryptumcheckout_gateway') . '">' . __('Configure', 'cryptum-checkout') . '</a>'
 	);
 	return array_merge($plugin_links, $links);
 }

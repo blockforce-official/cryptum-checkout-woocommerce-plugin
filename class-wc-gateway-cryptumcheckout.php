@@ -20,7 +20,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 	public function __construct()
 	{
 		$this->id                 = 'cryptumcheckout_gateway';
-		$this->icon               = CRYPTUM_CHECKOUT_PLUGIN_DIR . '/assets/images/cryptum-checkout-logo.png';
+		$this->icon               = CRYPTUM_CHECKOUT_PLUGIN_DIR . '/assets/images/cryptum-icon.png';
 		$this->has_fields         = false;
 		$this->method_title       = __('Cryptum Checkout');
 		$this->method_description = __('Connects your WooCommerce store to the Cryptum Checkout Payment Gateway.', 'cryptum-checkout');
@@ -76,7 +76,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 
 	public function get_icon()
 	{
-		$icon_html = '<img src="' . plugins_url('assets/images/cryptum-checkout-logo.png', __FILE__) . '" />';
+		$icon_html = '<img src="' . plugins_url('assets/images/cryptum-icon.png', __FILE__) . '" />';
 		return apply_filters('woocommerce_gateway_icon', $icon_html, $this->id);
 	}
 
@@ -95,10 +95,10 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 				'label'   => __('Enable Cryptum E-commerce Checkout', 'cryptum-checkout'),
 			),
 			'title' => array(
-				'title' => __('Title', 'woothemes'),
+				'title' => __('Title', 'cryptum-checkout'),
 				'type' => 'text',
-				'description' => __('This controls the title which the user sees during checkout.', 'woothemes'),
-				'default' => __('Cryptum Checkout', 'woothemes')
+				'description' => __('This controls the title which the user sees during checkout.', 'cryptum-checkout'),
+				'default' => __('Cryptum Checkout', 'cryptum-checkout')
 			),
 			'environment' => array(
 				'title' => __('Environment', 'cryptum-checkout'),
@@ -119,7 +119,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			'apikey' => array(
 				'title'       => __('API Key', 'cryptum-checkout'),
 				'type'        => 'text',
-				'description' => __('Enter your Cryptum API Key (Generated in Cryptum Dashboard, API Keys Section)'),
+				'description' => __('Enter your Cryptum API Key (Generated in Cryptum Dashboard, API Keys Section)', 'cryptum-checkout'),
 				'default'     => __('', 'cryptum-checkout'),
 			),
 
@@ -133,7 +133,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			'storeDiscountPercentage' => array(
 				'title'       => __('Store Discount Percentage', 'cryptum-checkout'),
 				'type'        => 'text',
-				'description' => __('Enter your percentage discount value'),
+				'description' => __('Enter your percentage discount value', 'cryptum-checkout'),
 				'default'     => __('0', 'cryptum-checkout'),
 			),
 		));
@@ -269,9 +269,9 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 
 				$error = null;
 				if (empty($order)) {
-					$error = "Payment callback received for non-existent order ID: $ecommerceOrderId";
+					$error = __("Payment callback received for non-existent order ID", 'cryptum-checkout') . ": $ecommerceOrderId";
 				} elseif ($order->has_status('completed') or $order->has_status('processing')) {
-					$error = "This order is currently being procesed or completed.";
+					$error = __("This order is currently being procesed or completed.", 'cryptum-checkout');
 				}
 				if (isset($error)) {
 					wp_send_json_error(
@@ -288,14 +288,14 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 						$order->payment_complete();
 						wp_send_json_error(
 							array(
-								'message' => 'Successful payment',
+								'message' => __('Successful payment', 'cryptum-checkout'),
 							),
 							200
 						);
 					} catch (\Throwable $th) {
 						wp_send_json_error(
 							array(
-								'message' => 'Failed to update order status [Order id: ' . $ecommerceOrderId . ']',
+								'message' => __('Failed to update order status', 'cryptum-checkout') . '[Order id: ' . $ecommerceOrderId . ']',
 								'extra' => $th->getMessage()
 							),
 							500
@@ -307,14 +307,14 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 						$order->update_status('cancelled',  __('Payment was cancelled ', 'cryptum-checkout'));
 						wp_send_json_error(
 							array(
-								'message' => 'Cancelled payment',
+								'message' => __('Cancelled payment', 'cryptum-checkout'),
 							),
 							200
 						);
 					} catch (\Throwable $th) {
 						wp_send_json_error(
 							array(
-								'message' => 'Failed to update order status [Order id: ' . $ecommerceOrderId . ']',
+								'message' => __('Failed to update order status') . '[Order id: ' . $ecommerceOrderId . ']',
 								'extra' => $th->getMessage()
 							),
 							500
@@ -332,7 +332,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 					} catch (\Throwable $th) {
 						wp_send_json_error(
 							array(
-								'message' => 'Failed to update order status [Order id: ' . $ecommerceOrderId . ']',
+								'message' => __('Failed to update order status') . '[Order id: ' . $ecommerceOrderId . ']',
 								'extra' => $th->getMessage()
 							),
 							500
@@ -351,7 +351,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 					} catch (\Throwable $th) {
 						wp_send_json_error(
 							array(
-								'message' => 'Failed to update order status [Order id: ' . $ecommerceOrderId . ']',
+								'message' => __('Failed to update order status') . '[Order id: ' . $ecommerceOrderId . ']',
 								'extra' => $th->getMessage()
 							),
 							500
@@ -362,7 +362,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 					wp_send_json_error(array('message' => 'Could not change order ' . $ecommerceOrderId . ' status to ' . $status), 400);
 				}
 			}
-			wp_send_json_error(array('message' => 'Invalid order ' . $ecommerceOrderId), 500);
+			wp_send_json_error(array('message' => __('Invalid order ', 'cryptum-checkout') . $ecommerceOrderId), 500);
 		}
 	}
 }
