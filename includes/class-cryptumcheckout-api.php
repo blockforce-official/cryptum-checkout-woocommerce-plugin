@@ -21,7 +21,7 @@ class CryptumCheckout_Api
 	}
 	static function get_cryptum_checkout_frontend($environment)
 	{
-		return $environment == 'production' ? 'https://plugin-checkout.cryptum.io/public/payment-details/' : 'https://plugin-checkout-dev.cryptum.io/public/payment-details/';
+		return $environment == 'production' ? 'https://plugin-checkout.cryptum.io/public/payment-details/' : 'https://plugin-checkout-hml.cryptum.io/public/payment-details/';
 	}
 
 	static function set_options($apikey, $environment)
