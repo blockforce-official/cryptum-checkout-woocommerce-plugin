@@ -4,12 +4,12 @@
  * Plugin Name: Cryptum Checkout
  * Plugin URI: https://github.com/blockforce-official/cryptum-checkout-woocommerce-plugin
  * Description: Cryptum Checkout Payment Gateway for Woocommerce
- * Version: 2.0.2
+ * Version: 1.0.0
  * Author: Blockforce
  * Author URI: https://blockforce.in
  * Text Domain: cryptum-checkout
  * Domain Path: /languages
- * Requires at least: 5.5
+ * Requires at least: 5.7
  * Requires PHP: 7.0
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
