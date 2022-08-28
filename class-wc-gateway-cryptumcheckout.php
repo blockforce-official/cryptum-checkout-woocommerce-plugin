@@ -175,7 +175,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			}
 			$transactions = json_decode($order->get_meta('_cryptum_checkout_order_transactions'));
 			if (isset($transactions) and count($transactions) > 0) {
-				echo '<h4>' . __('NFT transactions hashes', 'cryptum-checkout') . '</h4>';
+				echo '<h4>' . __('Blockchain Info', 'cryptum-checkout') . '</h4>';
 				foreach ($transactions as $transaction) {
 					echo '<p><strong>' . $transaction->protocol . ': </strong> '
 						. '<a href="' . CryptumCheckout_Api::get_tx_explorer_url($transaction->protocol, $transaction->hash) . '" target="_blank">'
