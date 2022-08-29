@@ -1,6 +1,6 @@
 # Cryptum Checkout for Wordpress/Woocommerce
 
-Use Cryptum Checkout Payment Gateway to accept CELO, cUSD and soon other cryptocurrencies in your Woocommerce store.
+Use Cryptum Checkout Payment Gateway to accept many cryptocurrencies in your Woocommerce store.
 
 ## Requirements
 -------------
