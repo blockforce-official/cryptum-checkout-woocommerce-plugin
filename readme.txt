@@ -14,13 +14,13 @@ This plugin connects your WooCommerce store to Blockforce Cryptum Checkout Payme
 Please notice that WooCommerce must be installed and active.
 
 
-= Minimum Requirements =
+== Minimum Requirements ==
 
 PHP 7.0 or greater is recommended
 WordPress 5.7 or greater is recommended
-WooCommerce 5.0 or greater is recommended
+WooCommerce 6.0 or greater is recommended
 
-= Installation =
+== Installation ==
 
 To do an automatic install of the Blockforce Cryptum Checkout, log in to your WordPress dashboard, navigate to the Plugins menu, and click “Add New.”
 
@@ -40,11 +40,7 @@ Enter the wallets that will receive payments for each blockchain protocol in the
 
 Check more information in the complete <a href="https://doc.cryptum.io/main/for-sellers/overview-for-sellers" target="_blank">Documentation</a>.
 
-= Compatibility =
-
-Compatible with versions above WooCommerce 3.0.
-
-= Development =
+== Development ==
 
 This plugin is being developed on <a href="https://github.com/blockforce-official/cryptum-checkout-wordpress-plugin" target="_blank">GitHub</a> by Blockforce team. Feel free to look the code and help us.
 The plugin connects with our Blockchain Cryptum Checkout APIs to register orders of cryptocurrency transactions. Those APIs will link the user’s payment with cryptocurrency and the order in your WooCommerce store.
