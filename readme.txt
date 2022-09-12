@@ -1,8 +1,8 @@
 === Cryptum Checkout ===
-Contributors: victorbfc
+Contributors: victorbfc, edsonprimo
 Tags: cryptocurrency, crypto, checkout, woocommerce, e-commerce, ecommerce, store, payments, gateway, cryptocurrency checkout, blockchain, celo, ethereum, usdt, usdc, hathor, htr
 Requires at least: 5.7
-Tested up to: 6.0.1
+Tested up to: 6.0.2
 Stable tag: 1.1.0
 Requires PHP: 7.0
 License: GPLv2 or later

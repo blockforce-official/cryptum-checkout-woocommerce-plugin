@@ -154,7 +154,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 		$post_type = get_post_type($post);
 		if (is_admin() and $post_type == 'shop_order' and $pagenow == 'post.php') {
 			add_meta_box(
-				'cryptum_nft_transactions_info',
+				'cryptum_checkout_transactions_info',
 				__('Cryptum Checkout Transactions Info', 'cryptum-checkout'),
 				[$this, 'show_transactions_info'],
 				'shop_order',
@@ -174,6 +174,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 				echo '<p style="font-size:12px;">' . __($message, 'cryptum-checkout')  . '</p>';
 			}
 			$transactions = json_decode($order->get_meta('_cryptum_checkout_order_transactions'));
+			CryptumCheckout_Log::info($transactions);
 			if (isset($transactions) and count($transactions) > 0) {
 				echo '<h4>' . __('Blockchain Info', 'cryptum-checkout') . '</h4>';
 				foreach ($transactions as $transaction) {
