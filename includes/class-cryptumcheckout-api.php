@@ -13,15 +13,15 @@ class CryptumCheckout_Api
 
 	static function get_cryptum_url($environment)
 	{
-		return $environment == 'production' ? 'https://api.cryptum.io' : 'https://api-hml.cryptum.io';
+		return $environment == 'production' ? 'https://api-dev.cryptum.io' : 'https://api-dev.cryptum.io';
 	}
 	static function get_cryptum_store_url($environment)
 	{
-		return $environment == 'production' ? 'https://api.cryptum.io/plugins' : 'https://api-hml.cryptum.io/plugins';
+		return $environment == 'production' ? 'https://api-dev.cryptum.io/plugins' : 'https://api-dev.cryptum.io/plugins';
 	}
 	static function get_cryptum_checkout_frontend($environment)
 	{
-		return $environment == 'production' ? 'https://plugin-checkout.cryptum.io/public/payment-details/' : 'https://plugin-checkout-hml.cryptum.io/public/payment-details/';
+		return $environment == 'production' ? 'https://plugin-checkout-dev.cryptum.io/public/payment-details/' : 'https://plugin-checkout-dev.cryptum.io/public/payment-details/';
 	}
 
 	static function set_options($apikey, $environment)
