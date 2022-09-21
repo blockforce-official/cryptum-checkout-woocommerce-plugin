@@ -21,7 +21,7 @@ class CryptumCheckout_Api
 	}
 	static function get_cryptum_checkout_frontend($environment)
 	{
-		return $environment == 'production' ? 'https://plugin-checkout.cryptum.io/public/payment-details/' : 'https://plugin-checkout-dev.cryptum.io/public/payment-details/';
+		return $environment == 'production' ? 'https://plugin-checkout.cryptum.io/public/payment-details/' : 'https://plugin-checkout-hml.cryptum.io/public/payment-details/';
 	}
 
 	static function set_options($apikey, $environment)
@@ -96,5 +96,29 @@ class CryptumCheckout_Api
 			'method' => 'GET',
 			'timeout' => 60
 		]);
+	}
+	static function get_tx_explorer_url($protocol, $hash)
+	{
+		$environment = CryptumCheckout_Api::$environment;
+		switch ($protocol)
+		{
+			case 'CELO':
+				$middle = $environment == "production" ? 'explorer.celo' : 'alfajores-blockscout.celo-testnet';
+				return "https://$middle.org/tx/$hash";
+			case 'ETHEREUM':
+				$middle = $environment == "production" ? 'etherscan' : 'rinkeby.etherscan';
+				return "https://$middle.io/tx/$hash";
+			case 'BSC':
+				$middle = $environment == "production" ? 'bscscan' : 'testnet.bscscan';
+				return "https://$middle.com/tx/$hash";
+			case 'AVAXCCHAIN':
+				$middle = $environment == "production" ? 'snowtrace' : 'testnet.snowtrace';
+				return "https://$middle.io/tx/$hash";
+			case 'POLYGON':
+				$middle = $environment == "production" ? 'polygonscan' : 'mumbai.polygonscan';
+				return "https://$middle.com/tx/$hash";
+			default:
+				return "";
+		}
 	}
 }

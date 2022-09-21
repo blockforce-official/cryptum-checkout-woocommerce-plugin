@@ -48,6 +48,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 	{
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 		add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
+		add_action('add_meta_boxes', array($this, 'show_transactions_info_panel'));
 	}
 
 	public function process_admin_options()
@@ -145,6 +146,48 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			return $str1;
 		}
 		return $str2;
+	}
+
+	public function show_transactions_info_panel()
+	{
+		global $pagenow, $post;
+		$post_type = get_post_type($post);
+		if (is_admin() and $post_type == 'shop_order' and $pagenow == 'post.php') {
+			add_meta_box(
+				'cryptum_checkout_transactions_info',
+				__('Cryptum Checkout Transactions Info', 'cryptum-checkout'),
+				[$this, 'show_transactions_info'],
+				'shop_order',
+				'normal'
+			);
+		}
+	}
+	public function show_transactions_info()
+	{ ?>
+		<div class="cryptum_checkout_transactions_infro_panel_data">
+			<?php
+			global $post;
+			$order = wc_get_order($post);
+
+			$message = $order->get_meta('_cryptum_checkout_order_transactions_message');
+			if (!empty($message)) {
+				echo '<p style="font-size:12px;">' . __($message, 'cryptum-checkout')  . '</p>';
+			}
+			$transactions = json_decode($order->get_meta('_cryptum_checkout_order_transactions'));
+			CryptumCheckout_Log::info($transactions);
+			if (isset($transactions) and count($transactions) > 0) {
+				echo '<h4>' . __('Blockchain Info', 'cryptum-checkout') . '</h4>';
+				foreach ($transactions as $transaction) {
+					echo '<p><strong>' . $transaction->protocol . ': </strong> '
+						. '<a href="' . CryptumCheckout_Api::get_tx_explorer_url($transaction->protocol, $transaction->hash) . '" target="_blank">'
+						. $transaction->hash
+						. '</a></p>';
+				}
+			} else {
+				echo '<p>' . __('No transactions yet.', 'cryptum-checkout') . '</p>';
+			} ?>
+		</div>
+<?php
 	}
 
 	/**
@@ -245,6 +288,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			$orderId = $decoded->orderId;
 			$message = $decoded->message;
 			$ecommerceOrderId = $decoded->ecommerceOrderId;
+			$transactions = $decoded->transactions;
 			$storeId = $decoded->storeId;
 
 			CryptumCheckout_Api::set_options($this->apikey, $this->get_option('environment'));
@@ -286,6 +330,9 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 					try {
 						$order->update_status('processing',  __('Payment was successful ', 'cryptum-checkout'));
 						$order->payment_complete();
+						$order->update_meta_data('_cryptum_checkout_order_transactions', json_encode($transactions));
+						$order->update_meta_data('_cryptum_checkout_order_transactions_message', $message);
+						$order->save();
 						wp_send_json_error(
 							array(
 								'message' => __('Successful payment', 'cryptum-checkout'),
