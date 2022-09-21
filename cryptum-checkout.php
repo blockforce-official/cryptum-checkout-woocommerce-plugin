@@ -58,3 +58,6 @@ function cryptumcheckout_gateway_init()
 add_filter('woocommerce_payment_gateways', 'cryptumcheckout_add_to_gateways');
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'cryptumcheckout_set_plugin_action_links');
 add_action('plugins_loaded', 'cryptumcheckout_gateway_init', 11);
+add_action('init', function () {
+	load_plugin_textdomain('cryptum-checkout', false, dirname(plugin_basename(__FILE__)) . '/languages');
+});
