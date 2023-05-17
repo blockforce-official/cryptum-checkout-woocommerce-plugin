@@ -14,6 +14,7 @@ defined('ABSPATH') or exit;
 
 require_once(CRYPTUM_CHECKOUT_PATH . '/includes/class-cryptumcheckout-log.php');
 require_once(CRYPTUM_CHECKOUT_PATH . '/includes/class-cryptumcheckout-api.php');
+require_once(CRYPTUM_CHECKOUT_PATH . '/includes/class-cryptumcheckout-util.php');
 
 class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 {
@@ -31,37 +32,44 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 		$this->init_settings();
 
 		// Define user set variables
-		$environment = $this->get_option('environment');
+		$this->environment 				= $this->get_option('environment');
 		$this->title 					= $this->get_option('title');
 		$this->storeId 			  		= $this->get_option('storeId');
 		$this->apikey 					= $this->get_option('apikey');
-		$this->productionEnvironment	= 'production' == $environment;
-		$this->backendUrl  				= CryptumCheckout_Api::get_cryptum_store_url($environment);
+		$this->webhookSecret 			= $this->get_option('webhookSecret');
+		$this->productionEnvironment	= 'production' == $this->environment;
+		$this->backendUrl  				= CryptumCheckout_Api::get_cryptum_store_url($this->environment);
 		$this->storeMarkupPercentage	= $this->get_option('storeMarkupPercentage');
 		$this->storeDiscountPercentage	= $this->get_option('storeDiscountPercentage');
-		$this->frontendUrl				= CryptumCheckout_Api::get_cryptum_checkout_frontend($environment);
+		$this->frontendUrl				= CryptumCheckout_Api::get_cryptum_checkout_frontend($this->environment);
 
 		$this->add_hooks();
 	}
 
 	private function add_hooks()
 	{
-		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array(&$this, 'process_admin_options'));
 		add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'callback_payment_handler'));
 		add_action('add_meta_boxes', array($this, 'show_transactions_info_panel'));
 	}
 
 	public function process_admin_options()
 	{
-		CryptumCheckout_Api::set_options($this->apikey, $this->get_option('environment'));
-		$response = CryptumCheckout_Api::verify_store($this->storeId);
+		$postData = $this->get_post_data();
+		$newApiKey = $this->get_field_value('apikey', [], $postData);
+		$newEnvironment = $this->get_field_value('environment', [], $postData);
+		$newStoreId = $this->get_field_value('storeId', [], $postData);
+		CryptumCheckout_Api::set_options($newApiKey, $newEnvironment);
+		$response = CryptumCheckout_Api::verify_store($newStoreId);
 		if (isset($response['error'])) {
-			CryptumCheckout_Log::info($response);
-			$settings = new WC_Admin_Settings();
-			$settings->add_error(__('Store not configured yet or not existent. You must configure a store in Cryptum dashboard first', 'cryptum-checkout'));
+			CryptumCheckout_Log::error('CryptumCheckout_Payment_Gateway::process_admin_options 64', $response);
+			WC_Admin_Settings::add_error(
+				__('Store not configured yet or not existent. You must configure a store in Cryptum dashboard first', 'cryptum-checkout')
+			);
+			return false;
 		}
 
-		parent::process_admin_options();
+		return parent::process_admin_options();
 	}
 
 	public function payment_fields()
@@ -114,13 +122,19 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			'storeId' => array(
 				'title'       => __('Store ID', 'cryptum-checkout'),
 				'type'        => 'text',
-				'description' => __('Enter your Cryptum Checkout Store ID (Automatically Generated in Cryptum Dashboard, Woocommerce Section.)', 'cryptum-checkout'),
+				'description' => __('Enter your Cryptum Checkout Store ID (Automatically Generated in Cryptum Dashboard, Project Section.)', 'cryptum-checkout'),
 				'default'     => __('', 'cryptum-checkout'),
 			),
 			'apikey' => array(
 				'title'       => __('API Key', 'cryptum-checkout'),
 				'type'        => 'text',
-				'description' => __('Enter your Cryptum API Key (Generated in Cryptum Dashboard, API Keys Section)', 'cryptum-checkout'),
+				'description' => __('Enter your Cryptum API Key (Generated in Cryptum Dashboard, Project Section)', 'cryptum-checkout'),
+				'default'     => __('', 'cryptum-checkout'),
+			),
+			'webhookSecret' => array(
+				'title'       => __('Webhook Secret Key', 'cryptum-checkout'),
+				'type'        => 'text',
+				'description' => __('Enter your Webhook secret key (Generated in Cryptum Dashboard, Webhooks Section)', 'cryptum-checkout'),
 				'default'     => __('', 'cryptum-checkout'),
 			),
 
@@ -174,7 +188,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 				echo '<p style="font-size:12px;">' . __($message, 'cryptum-checkout')  . '</p>';
 			}
 			$transactions = json_decode($order->get_meta('_cryptum_checkout_order_transactions'));
-			CryptumCheckout_Log::info($transactions);
+			CryptumCheckout_Log::info('CryptumCheckout_Payment_Gateway::show_transactions_info 190', $transactions);
 			if (isset($transactions) and count($transactions) > 0) {
 				echo '<h4>' . __('Blockchain Info', 'cryptum-checkout') . '</h4>';
 				foreach ($transactions as $transaction) {
@@ -231,7 +245,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 				'state' => $this->coalesce_string($order->get_shipping_state(), $order->get_billing_state())
 			)
 		);
-		CryptumCheckout_Api::set_options($this->apikey, $this->get_option('environment'));
+		CryptumCheckout_Api::set_options($this->apikey, $this->environment);
 		$response = CryptumCheckout_Api::create_order($body);
 		if (isset($response['error'])) {
 			$error_message = $response['message'];
@@ -263,7 +277,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			'sessionToken' => $createOrderResponse['sessionToken'],
 			'orderId' => $createOrderResponse['id'],
 			'ecommerceOrderId' => $order->get_id(),
-			'environment' => $this->get_option('environment'),
+			'environment' => $this->environment,
 		);
 		$form_params_joins = '';
 		foreach ($form_params as $key => $value) {
@@ -278,7 +292,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			status_header(200);
 			exit();
 		} elseif ('POST' == $_SERVER['REQUEST_METHOD']) {
-			$apikey = $_SERVER['HTTP_X_API_KEY'];
+			$apikey = trim($_SERVER['HTTP_X_API_KEY']);
 			if ($this->apikey != $apikey) {
 				wp_send_json_error(array('message' => 'Unauthorized'), 401);
 			}
@@ -291,15 +305,23 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			$transactions = $decoded->transactions;
 			$storeId = $decoded->storeId;
 
-			CryptumCheckout_Api::set_options($this->apikey, $this->get_option('environment'));
+			$webhookSignature = trim($_SERVER['HTTP_X_WEBHOOK_SIGNATURE']);
+			if (
+				!empty($webhookSignature) and !CryptumCheckout_Util::is_valid_signature($raw_post, $webhookSignature, $this->webhookSecret)
+			) {
+				wp_send_json_error(['message' => __('No signatures found matching the expected signature', 'cryptum-checkout')], 400);
+			}
+
+			CryptumCheckout_Api::set_options($this->apikey, $this->environment);
 			$response = CryptumCheckout_Api::get_order($orderId);
 			if (isset($response['error'])) {
+				CryptumCheckout_Log::error('CryptumCheckout_Payment_Gateway::callback_payment_handler 318', json_encode($response));
 				$error_message = $response['message'];
 				wp_send_json_error(['message' => $error_message], 400);
 			}
 
 			$status = $response['paymentStatus'];
-			CryptumCheckout_Log::info(json_encode($response));
+			CryptumCheckout_Log::info('CryptumCheckout_Payment_Gateway::callback_payment_handler 324', json_encode($response));
 
 			if (!isset($storeId) or $this->storeId != $storeId) {
 				wp_send_json_error(array('message' => 'Incorrect store id'), 400);
@@ -405,7 +427,10 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 						);
 					}
 				} else {
-					CryptumCheckout_Log::info('Could not change order ' . $ecommerceOrderId . ' status to ' . $status);
+					CryptumCheckout_Log::info(
+						'CryptumCheckout_Payment_Gateway::callback_payment_handler 429',
+						'Could not change order ' . $ecommerceOrderId . ' status to ' . $status
+					);
 					wp_send_json_error(array('message' => 'Could not change order ' . $ecommerceOrderId . ' status to ' . $status), 400);
 				}
 			}
