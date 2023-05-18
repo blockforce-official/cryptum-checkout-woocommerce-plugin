@@ -307,7 +307,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 
 			$webhookSignature = trim($_SERVER['HTTP_X_WEBHOOK_SIGNATURE']);
 			if (
-				!empty($webhookSignature) and !CryptumCheckout_Util::is_valid_signature($raw_post, $webhookSignature, $this->webhookSecret)
+				!empty($this->webhookSecret) and !CryptumCheckout_Util::is_valid_signature($raw_post, $webhookSignature, $this->webhookSecret)
 			) {
 				wp_send_json_error(['message' => __('No signatures found matching the expected signature', 'cryptum-checkout')], 400);
 			}
