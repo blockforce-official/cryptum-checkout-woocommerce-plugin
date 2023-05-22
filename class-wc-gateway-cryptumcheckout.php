@@ -292,10 +292,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			status_header(200);
 			exit();
 		} elseif ('POST' == $_SERVER['REQUEST_METHOD']) {
-			$apikey = trim($_SERVER['HTTP_X_API_KEY']);
-			if ($this->apikey != $apikey) {
-				wp_send_json_error(array('message' => 'Unauthorized'), 401);
-			}
+			$webhookSignature = trim($_SERVER['HTTP_X_WEBHOOK_SIGNATURE']);
 
 			$raw_post = file_get_contents('php://input');
 			$decoded  = json_decode($raw_post);
@@ -305,7 +302,6 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			$transactions = $decoded->transactions;
 			$storeId = $decoded->storeId;
 
-			$webhookSignature = trim($_SERVER['HTTP_X_WEBHOOK_SIGNATURE']);
 			if (
 				!empty($this->webhookSecret) and !CryptumCheckout_Util::is_valid_signature($raw_post, $webhookSignature, $this->webhookSecret)
 			) {
