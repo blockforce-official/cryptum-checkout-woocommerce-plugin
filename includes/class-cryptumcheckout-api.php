@@ -105,7 +105,7 @@ class CryptumCheckout_Api
 				$middle = $environment == "production" ? 'explorer.celo' : 'alfajores-blockscout.celo-testnet';
 				return "https://$middle.org/tx/$hash";
 			case 'ETHEREUM':
-				$middle = $environment == "production" ? 'etherscan' : 'rinkeby.etherscan';
+				$middle = $environment == "production" ? 'etherscan' : 'goerli.etherscan';
 				return "https://$middle.io/tx/$hash";
 			case 'BSC':
 				$middle = $environment == "production" ? 'bscscan' : 'testnet.bscscan';
