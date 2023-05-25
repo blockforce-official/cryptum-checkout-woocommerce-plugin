@@ -97,9 +97,8 @@ class CryptumCheckout_Api
 			'timeout' => 60
 		]);
 	}
-	static function get_tx_explorer_url($protocol, $hash)
+	static function get_tx_explorer_url($protocol, $hash, $environment)
 	{
-		$environment = CryptumCheckout_Api::$environment;
 		switch ($protocol) {
 			case 'CELO':
 				$middle = $environment == "production" ? 'explorer.celo' : 'alfajores-blockscout.celo-testnet';

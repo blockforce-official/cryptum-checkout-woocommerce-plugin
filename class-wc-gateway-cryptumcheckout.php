@@ -59,12 +59,20 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 		$newApiKey = $this->get_field_value('apikey', [], $postData);
 		$newEnvironment = $this->get_field_value('environment', [], $postData);
 		$newStoreId = $this->get_field_value('storeId', [], $postData);
+		$newWebhookSecret = $this->get_field_value('webhookSecret', [], $postData);
 		CryptumCheckout_Api::set_options($newApiKey, $newEnvironment);
 		$response = CryptumCheckout_Api::verify_store($newStoreId);
 		if (isset($response['error'])) {
 			CryptumCheckout_Log::error('CryptumCheckout_Payment_Gateway::process_admin_options 64', $response);
 			WC_Admin_Settings::add_error(
 				__('Store not configured yet or not existent. You must configure a store in Cryptum dashboard first', 'cryptum-checkout')
+			);
+			return false;
+		}
+		if (!empty($newWebhookSecret) and $newWebhookSecret != $response['webhookSecret']) {
+			CryptumCheckout_Log::error('CryptumCheckout_Payment_Gateway::process_admin_options 73', $response);
+			WC_Admin_Settings::add_error(
+				__('Webhook secret is incorrect. Try to copy it from Cryptum dashboard', 'cryptum-checkout')
 			);
 			return false;
 		}
@@ -127,14 +135,14 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 			),
 			'apikey' => array(
 				'title'       => __('API Key', 'cryptum-checkout'),
-				'type'        => 'text',
+				'type'        => 'password',
 				'description' => __('Enter your Cryptum API Key (Generated in Cryptum Dashboard, Project Section)', 'cryptum-checkout'),
 				'default'     => __('', 'cryptum-checkout'),
 			),
 			'webhookSecret' => array(
 				'title'       => __('Webhook Secret Key', 'cryptum-checkout'),
-				'type'        => 'text',
-				'description' => __('Enter your Webhook secret key (Generated in Cryptum Dashboard, Webhooks Section)', 'cryptum-checkout'),
+				'type'        => 'password',
+				'description' => __('<b>Optional</b>. Enter your Webhook secret key (Generated in Cryptum Dashboard, Webhooks Section)', 'cryptum-checkout'),
 				'default'     => __('', 'cryptum-checkout'),
 			),
 
@@ -193,7 +201,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 				echo '<h4>' . __('Blockchain Info', 'cryptum-checkout') . '</h4>';
 				foreach ($transactions as $transaction) {
 					echo '<p><strong>' . $transaction->protocol . ': </strong> '
-						. '<a href="' . CryptumCheckout_Api::get_tx_explorer_url($transaction->protocol, $transaction->hash) . '" target="_blank">'
+						. '<a href="' . CryptumCheckout_Api::get_tx_explorer_url($transaction->protocol, $transaction->hash, $this->environment) . '" target="_blank">'
 						. $transaction->hash
 						. '</a></p>';
 				}
