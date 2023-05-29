@@ -64,9 +64,12 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 		$response = CryptumCheckout_Api::verify_store($newStoreId);
 		if (isset($response['error'])) {
 			CryptumCheckout_Log::error('CryptumCheckout_Payment_Gateway::process_admin_options 64', $response);
-			WC_Admin_Settings::add_error(
-				__('Store not configured yet or not existent. You must configure a store in Cryptum dashboard first', 'cryptum-checkout')
-			);
+			if ($response['message'] == 'Invalid store wallet configuration') {
+				$errorMessage = __('Store wallets not configured yet. You must configure the wallets in Cryptum dashboard first', 'cryptum-checkout');
+			} else {
+				$errorMessage = __('Store not configured yet or not existent. You must configure a store in Cryptum dashboard first', 'cryptum-checkout');
+			}
+			WC_Admin_Settings::add_error($errorMessage);
 			return false;
 		}
 		if (!empty($newWebhookSecret) and $newWebhookSecret != $response['webhookSecret']) {
@@ -341,7 +344,7 @@ class CryptumCheckout_Payment_Gateway extends \WC_Payment_Gateway
 				if (empty($order)) {
 					$error = __("Payment callback received for non-existent order ID", 'cryptum-checkout') . ": $ecommerceOrderId";
 				} elseif ($order->has_status('completed') or $order->has_status('processing')) {
-					$error = __("This order is currently being procesed or completed.", 'cryptum-checkout');
+					$error = __("This order is currently being processed or completed.", 'cryptum-checkout');
 				}
 				if (isset($error)) {
 					wp_send_json_error(
