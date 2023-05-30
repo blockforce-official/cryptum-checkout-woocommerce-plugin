@@ -4,7 +4,7 @@
  * Plugin Name: Cryptum Checkout
  * Plugin URI: https://github.com/blockforce-official/cryptum-checkout-woocommerce-plugin
  * Description: Cryptum Checkout Payment Gateway for Woocommerce
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: Blockforce
  * Author URI: https://blockforce.in
  * Text Domain: cryptum-checkout
