@@ -34,7 +34,7 @@ class CryptumCheckout_Api
 	{
 		$response = wp_safe_remote_request($url, $args);
 		if (is_wp_error($response)) {
-			CryptumCheckout_Log::error(json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+			CryptumCheckout_Log::error('CryptumCheckout_Api::request 37', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 			return [
 				'error' => 'Error',
 				'message' => $response->get_error_message()
@@ -45,7 +45,7 @@ class CryptumCheckout_Api
 		$responseBody = json_decode($response['body'], true);
 		if (isset($responseBody['error']) || (isset($responseObj) && $responseObj['code'] >= 400)) {
 			$error_message = isset($responseBody['error']['message']) ? $responseBody['error']['message'] : $responseBody['message'];
-			CryptumCheckout_Log::error(json_encode($responseBody, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+			CryptumCheckout_Log::error('CryptumCheckout_Api::request 48', json_encode($responseBody, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 			return [
 				'error' => 'Error',
 				'message' => $error_message
@@ -97,16 +97,14 @@ class CryptumCheckout_Api
 			'timeout' => 60
 		]);
 	}
-	static function get_tx_explorer_url($protocol, $hash)
+	static function get_tx_explorer_url($protocol, $hash, $environment)
 	{
-		$environment = CryptumCheckout_Api::$environment;
-		switch ($protocol)
-		{
+		switch ($protocol) {
 			case 'CELO':
-				$middle = $environment == "production" ? 'explorer.celo' : 'alfajores-blockscout.celo-testnet';
-				return "https://$middle.org/tx/$hash";
+				$middle = $environment == "production" ? 'mainnet' : 'alfajores';
+				return "https://explorer.celo.org/$middle/tx/$hash";
 			case 'ETHEREUM':
-				$middle = $environment == "production" ? 'etherscan' : 'rinkeby.etherscan';
+				$middle = $environment == "production" ? 'etherscan' : 'goerli.etherscan';
 				return "https://$middle.io/tx/$hash";
 			case 'BSC':
 				$middle = $environment == "production" ? 'bscscan' : 'testnet.bscscan';

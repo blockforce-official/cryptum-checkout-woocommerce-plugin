@@ -1,21 +1,21 @@
-# Copyright (C) 2022 Blockforce
+# Copyright (C) 2023 Blockforce
 # This file is distributed under the GNU General Public License v2.0.
 msgid ""
 msgstr ""
-"Project-Id-Version: Cryptum Checkout 1.1.0\n"
+"Project-Id-Version: Cryptum Checkout 1.1.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/cryptum-checkout-wordpress-plugin\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-09-21T18:52:47+00:00\n"
+"POT-Creation-Date: 2023-05-29T17:16:04-03:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: cryptum-checkout\n"
 
 #. Plugin Name of the plugin
-#: class-wc-gateway-cryptumcheckout.php:102
+#: class-wc-gateway-cryptumcheckout.php:121
 msgid "Cryptum Checkout"
 msgstr ""
 
@@ -35,148 +35,168 @@ msgstr ""
 msgid "https://blockforce.in"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:26
+#: class-wc-gateway-cryptumcheckout.php:27
 msgid "Connects your WooCommerce store to the Cryptum Checkout Payment Gateway."
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:27
+#: class-wc-gateway-cryptumcheckout.php:28
 msgid "Pay with Cryptum, you will be redirected to Cryptum Checkout to finish your order payment"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:61
+#: class-wc-gateway-cryptumcheckout.php:68
+msgid "Store wallets not configured yet. You must configure the wallets in Cryptum dashboard first"
+msgstr ""
+
+#: class-wc-gateway-cryptumcheckout.php:70
 msgid "Store not configured yet or not existent. You must configure a store in Cryptum dashboard first"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:94
+#: class-wc-gateway-cryptumcheckout.php:78
+msgid "Webhook secret is incorrect. Try to copy it from Cryptum dashboard"
+msgstr ""
+
+#: class-wc-gateway-cryptumcheckout.php:113
 msgid "Enable/Disable"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:96
+#: class-wc-gateway-cryptumcheckout.php:115
 msgid "Enable Cryptum E-commerce Checkout"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:99
+#: class-wc-gateway-cryptumcheckout.php:118
 msgid "Title"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:101
+#: class-wc-gateway-cryptumcheckout.php:120
 msgid "This controls the title which the user sees during checkout."
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:105
+#: class-wc-gateway-cryptumcheckout.php:124
 msgid "Environment"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:107
+#: class-wc-gateway-cryptumcheckout.php:126
 msgid "Choose your environment. The Test environment should be used for testing only."
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:110
+#: class-wc-gateway-cryptumcheckout.php:129
 msgid "Production"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:111
+#: class-wc-gateway-cryptumcheckout.php:130
 msgid "Test"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:115
+#: class-wc-gateway-cryptumcheckout.php:134
 msgid "Store ID"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:117
-msgid "Enter your Cryptum Checkout Store ID (Automatically Generated in Cryptum Dashboard, Woocommerce Section.)"
+#: class-wc-gateway-cryptumcheckout.php:136
+msgid "Enter your Cryptum Checkout Store ID (Automatically Generated in Cryptum Dashboard, Project Section.)"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:121
+#: class-wc-gateway-cryptumcheckout.php:140
 msgid "API Key"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:123
-msgid "Enter your Cryptum API Key (Generated in Cryptum Dashboard, API Keys Section)"
+#: class-wc-gateway-cryptumcheckout.php:142
+msgid "Enter your Cryptum API Key (Generated in Cryptum Dashboard, Project Section)"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:128
+#: class-wc-gateway-cryptumcheckout.php:146
+msgid "Webhook Secret Key"
+msgstr ""
+
+#: class-wc-gateway-cryptumcheckout.php:148
+msgid "<b>Optional</b>. Enter your Webhook secret key (Generated in Cryptum Dashboard, Webhooks Section)"
+msgstr ""
+
+#: class-wc-gateway-cryptumcheckout.php:153
 msgid "Store Markup Percentage"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:130
+#: class-wc-gateway-cryptumcheckout.php:155
 msgid "Enter your percentage markup value"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:131
-#: class-wc-gateway-cryptumcheckout.php:138
+#: class-wc-gateway-cryptumcheckout.php:156
+#: class-wc-gateway-cryptumcheckout.php:163
 msgid "0"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:135
+#: class-wc-gateway-cryptumcheckout.php:160
 msgid "Store Discount Percentage"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:137
+#: class-wc-gateway-cryptumcheckout.php:162
 msgid "Enter your percentage discount value"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:158
+#: class-wc-gateway-cryptumcheckout.php:183
 msgid "Cryptum Checkout Transactions Info"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:179
+#: class-wc-gateway-cryptumcheckout.php:204
 msgid "Blockchain Info"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:187
+#: class-wc-gateway-cryptumcheckout.php:212
 msgid "No transactions yet."
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:207
+#: class-wc-gateway-cryptumcheckout.php:232
 msgid "Unsupported currency: "
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:238
+#: class-wc-gateway-cryptumcheckout.php:263
 msgid "Error processing Cryptum Checkout"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:242
+#: class-wc-gateway-cryptumcheckout.php:267
 msgid "Pending Cryptum Checkout payment"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:316
-msgid "Payment callback received for non-existent order ID"
-msgstr ""
-
-#: class-wc-gateway-cryptumcheckout.php:318
-msgid "This order is currently being procesed or completed."
-msgstr ""
-
-#: class-wc-gateway-cryptumcheckout.php:331
-msgid "Payment was successful "
-msgstr ""
-
-#: class-wc-gateway-cryptumcheckout.php:338
-msgid "Successful payment"
+#: class-wc-gateway-cryptumcheckout.php:319
+msgid "No signatures found matching the expected signature"
 msgstr ""
 
 #: class-wc-gateway-cryptumcheckout.php:345
+msgid "Payment callback received for non-existent order ID"
+msgstr ""
+
+#: class-wc-gateway-cryptumcheckout.php:347
+msgid "This order is currently being processed or completed."
+msgstr ""
+
+#: class-wc-gateway-cryptumcheckout.php:360
+msgid "Payment was successful "
+msgstr ""
+
+#: class-wc-gateway-cryptumcheckout.php:367
+msgid "Successful payment"
+msgstr ""
+
+#: class-wc-gateway-cryptumcheckout.php:374
 msgid "Failed to update order status"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:354
+#: class-wc-gateway-cryptumcheckout.php:383
 msgid "Payment was cancelled "
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:357
+#: class-wc-gateway-cryptumcheckout.php:386
 msgid "Cancelled payment"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:372
+#: class-wc-gateway-cryptumcheckout.php:401
 msgid "Payment awaiting to complete "
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:391
+#: class-wc-gateway-cryptumcheckout.php:420
 msgid "Payment failed"
 msgstr ""
 
-#: class-wc-gateway-cryptumcheckout.php:412
+#: class-wc-gateway-cryptumcheckout.php:444
 msgid "Invalid order "
 msgstr ""
 
