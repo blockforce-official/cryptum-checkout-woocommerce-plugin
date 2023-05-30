@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/cryptum-checkout-"
 "wordpress-plugin\n"
-"POT-Creation-Date: 2023-05-29T17:16:04-03:00\n"
-"PO-Revision-Date: 2023-05-29 17:16-0300\n"
+"POT-Creation-Date: 2022-09-21T18:52:47+00:00\n"
+"PO-Revision-Date: 2022-09-21 16:12-0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 
 #. Plugin Name of the plugin
-#: class-wc-gateway-cryptumcheckout.php:121
+#: class-wc-gateway-cryptumcheckout.php:102
 msgid "Cryptum Checkout"
 msgstr "Cryptum Checkout"
 
@@ -38,12 +38,12 @@ msgstr "Blockforce"
 msgid "https://blockforce.in"
 msgstr "https://blockforce.in"
 
-#: class-wc-gateway-cryptumcheckout.php:27
+#: class-wc-gateway-cryptumcheckout.php:26
 msgid ""
 "Connects your WooCommerce store to the Cryptum Checkout Payment Gateway."
 msgstr "Conectar sua loja WooCommerce ao Cryptum Checkout."
 
-#: class-wc-gateway-cryptumcheckout.php:28
+#: class-wc-gateway-cryptumcheckout.php:27
 msgid ""
 "Pay with Cryptum, you will be redirected to Cryptum Checkout to finish your "
 "order payment"
@@ -51,15 +51,7 @@ msgstr ""
 "Pague com Cryptum Checkout, você será redirecionado ao Cryptum Checkout para "
 "finalizar seu pagamento"
 
-#: class-wc-gateway-cryptumcheckout.php:68
-msgid ""
-"Store wallets not configured yet. You must configure the wallets in Cryptum "
-"dashboard first"
-msgstr ""
-"As carteiras da loja não foram configuradas ainda. Vá até o portal do "
-"Cryptum para configurar as carteiras"
-
-#: class-wc-gateway-cryptumcheckout.php:70
+#: class-wc-gateway-cryptumcheckout.php:61
 msgid ""
 "Store not configured yet or not existent. You must configure a store in "
 "Cryptum dashboard first"
@@ -67,169 +59,142 @@ msgstr ""
 "A loja não foi configurada corretamente ou não existe. Vá até o portal do "
 "Cryptum para configurar uma loja"
 
-#: class-wc-gateway-cryptumcheckout.php:78
-msgid "Webhook secret is incorrect. Try to copy it from Cryptum dashboard"
-msgstr ""
-"A chave secreta do webhook está incorreta. Tente copiá-la do portal do "
-"Cryptum"
-
-#: class-wc-gateway-cryptumcheckout.php:113
+#: class-wc-gateway-cryptumcheckout.php:94
 msgid "Enable/Disable"
 msgstr "Habilitar/Desabilitar"
 
-#: class-wc-gateway-cryptumcheckout.php:115
+#: class-wc-gateway-cryptumcheckout.php:96
 msgid "Enable Cryptum E-commerce Checkout"
 msgstr "Habilitar Cryptum Checkout"
 
-#: class-wc-gateway-cryptumcheckout.php:118
+#: class-wc-gateway-cryptumcheckout.php:99
 msgid "Title"
 msgstr "Título"
 
-#: class-wc-gateway-cryptumcheckout.php:120
+#: class-wc-gateway-cryptumcheckout.php:101
 msgid "This controls the title which the user sees during checkout."
 msgstr "Isso controla o título que os usuários verão durante o pagamento."
 
-#: class-wc-gateway-cryptumcheckout.php:124
+#: class-wc-gateway-cryptumcheckout.php:105
 msgid "Environment"
 msgstr "Ambiente"
 
-#: class-wc-gateway-cryptumcheckout.php:126
+#: class-wc-gateway-cryptumcheckout.php:107
 msgid ""
 "Choose your environment. The Test environment should be used for testing "
 "only."
 msgstr ""
 "Selecione um ambiente. O ambiente de Teste deve ser usado para testnet."
 
-#: class-wc-gateway-cryptumcheckout.php:129
+#: class-wc-gateway-cryptumcheckout.php:110
 msgid "Production"
 msgstr "Produção (mainnet)"
 
-#: class-wc-gateway-cryptumcheckout.php:130
+#: class-wc-gateway-cryptumcheckout.php:111
 msgid "Test"
 msgstr "Teste (testnet)"
 
-#: class-wc-gateway-cryptumcheckout.php:134
+#: class-wc-gateway-cryptumcheckout.php:115
 msgid "Store ID"
 msgstr "ID de Loja"
 
-#: class-wc-gateway-cryptumcheckout.php:136
+#: class-wc-gateway-cryptumcheckout.php:117
 msgid ""
 "Enter your Cryptum Checkout Store ID (Automatically Generated in Cryptum "
-"Dashboard, Project Section.)"
-msgstr ""
-"Insira o ID de Loja (Gerado automaticamente no portal do Cryptum, Seção de "
-"Projeto.)"
+"Dashboard, Woocommerce Section.)"
+msgstr "Insira o ID de Loja (Gerado automaticamente no portal do Cryptum)"
 
-#: class-wc-gateway-cryptumcheckout.php:140
+#: class-wc-gateway-cryptumcheckout.php:121
 msgid "API Key"
 msgstr "Chave de API"
 
-#: class-wc-gateway-cryptumcheckout.php:142
+#: class-wc-gateway-cryptumcheckout.php:123
 msgid ""
-"Enter your Cryptum API Key (Generated in Cryptum Dashboard, Project Section)"
-msgstr ""
-"Insira sua chave de API (Gerada no portal do Cryptum, Seção de Projeto)"
+"Enter your Cryptum API Key (Generated in Cryptum Dashboard, API Keys Section)"
+msgstr "Insira sua chave de API (Gerada no portal do Cryptum)"
 
-#: class-wc-gateway-cryptumcheckout.php:146
-msgid "Webhook Secret Key"
-msgstr "Chave secreta de webhook"
-
-#: class-wc-gateway-cryptumcheckout.php:148
-msgid ""
-"<b>Optional</b>. Enter your Webhook secret key (Generated in Cryptum "
-"Dashboard, Webhooks Section)"
-msgstr ""
-"<b>Opcional</b>. Insira sua chave de API (Gerada no portal do Cryptum, Seção "
-"de Webhooks)"
-
-#: class-wc-gateway-cryptumcheckout.php:153
+#: class-wc-gateway-cryptumcheckout.php:128
 msgid "Store Markup Percentage"
 msgstr "Porcentagem de aumento de preço"
 
-#: class-wc-gateway-cryptumcheckout.php:155
+#: class-wc-gateway-cryptumcheckout.php:130
 msgid "Enter your percentage markup value"
 msgstr "Insira a porcentagem para aumento de preço"
 
-#: class-wc-gateway-cryptumcheckout.php:156
-#: class-wc-gateway-cryptumcheckout.php:163
+#: class-wc-gateway-cryptumcheckout.php:131
+#: class-wc-gateway-cryptumcheckout.php:138
 msgid "0"
 msgstr "0"
 
-#: class-wc-gateway-cryptumcheckout.php:160
+#: class-wc-gateway-cryptumcheckout.php:135
 msgid "Store Discount Percentage"
 msgstr "Porcentagem de desconto de preço"
 
-#: class-wc-gateway-cryptumcheckout.php:162
+#: class-wc-gateway-cryptumcheckout.php:137
 msgid "Enter your percentage discount value"
 msgstr "Insira a porcentagem para desconto de preço"
 
-#: class-wc-gateway-cryptumcheckout.php:183
+#: class-wc-gateway-cryptumcheckout.php:158
 msgid "Cryptum Checkout Transactions Info"
 msgstr "Informações de transações do Cryptum Checkout"
 
-#: class-wc-gateway-cryptumcheckout.php:204
+#: class-wc-gateway-cryptumcheckout.php:179
 msgid "Blockchain Info"
 msgstr "Informação de blockchain"
 
-#: class-wc-gateway-cryptumcheckout.php:212
+#: class-wc-gateway-cryptumcheckout.php:187
 msgid "No transactions yet."
 msgstr "Sem transações ainda."
 
-#: class-wc-gateway-cryptumcheckout.php:232
+#: class-wc-gateway-cryptumcheckout.php:207
 msgid "Unsupported currency: "
 msgstr "Moeda não suportada: "
 
-#: class-wc-gateway-cryptumcheckout.php:263
+#: class-wc-gateway-cryptumcheckout.php:238
 msgid "Error processing Cryptum Checkout"
 msgstr "Erro ao processar pedido"
 
-#: class-wc-gateway-cryptumcheckout.php:267
+#: class-wc-gateway-cryptumcheckout.php:242
 msgid "Pending Cryptum Checkout payment"
 msgstr "Pagamento pendente do Cryptum Checkout"
 
-#: class-wc-gateway-cryptumcheckout.php:319
-msgid "No signatures found matching the expected signature"
-msgstr "Assinaturas são incompatíveis"
-
-#: class-wc-gateway-cryptumcheckout.php:345
+#: class-wc-gateway-cryptumcheckout.php:316
 msgid "Payment callback received for non-existent order ID"
 msgstr "Callback de pagamento recebido com ID de pedido inexistente"
 
-#: class-wc-gateway-cryptumcheckout.php:347
-#, fuzzy
-#| msgid "This order is currently being procesed or completed."
-msgid "This order is currently being processed or completed."
+#: class-wc-gateway-cryptumcheckout.php:318
+msgid "This order is currently being procesed or completed."
 msgstr "Esse pedido está sendo processado ou finalizado."
 
-#: class-wc-gateway-cryptumcheckout.php:360
+#: class-wc-gateway-cryptumcheckout.php:331
 msgid "Payment was successful "
 msgstr "Pagamento foi finalizado com sucesso"
 
-#: class-wc-gateway-cryptumcheckout.php:367
+#: class-wc-gateway-cryptumcheckout.php:338
 msgid "Successful payment"
 msgstr "Pagamento finalizado com sucesso"
 
-#: class-wc-gateway-cryptumcheckout.php:374
+#: class-wc-gateway-cryptumcheckout.php:345
 msgid "Failed to update order status"
 msgstr "Falha ao atualizar o status do pedido"
 
-#: class-wc-gateway-cryptumcheckout.php:383
+#: class-wc-gateway-cryptumcheckout.php:354
 msgid "Payment was cancelled "
 msgstr "Pagamento foi cancelado"
 
-#: class-wc-gateway-cryptumcheckout.php:386
+#: class-wc-gateway-cryptumcheckout.php:357
 msgid "Cancelled payment"
 msgstr "Pagamento cancelado"
 
-#: class-wc-gateway-cryptumcheckout.php:401
+#: class-wc-gateway-cryptumcheckout.php:372
 msgid "Payment awaiting to complete "
 msgstr "Pagamento está sendo finalizado"
 
-#: class-wc-gateway-cryptumcheckout.php:420
+#: class-wc-gateway-cryptumcheckout.php:391
 msgid "Payment failed"
 msgstr "Pagamento falhou"
 
-#: class-wc-gateway-cryptumcheckout.php:444
+#: class-wc-gateway-cryptumcheckout.php:412
 msgid "Invalid order "
 msgstr "Pedido inválido"
 
