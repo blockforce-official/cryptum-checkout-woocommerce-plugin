@@ -101,8 +101,8 @@ class CryptumCheckout_Api
 	{
 		switch ($protocol) {
 			case 'CELO':
-				$middle = $environment == "production" ? 'explorer.celo' : 'alfajores-blockscout.celo-testnet';
-				return "https://$middle.org/tx/$hash";
+				$middle = $environment == "production" ? 'mainnet' : 'alfajores';
+				return "https://explorer.celo.org/$middle/tx/$hash";
 			case 'ETHEREUM':
 				$middle = $environment == "production" ? 'etherscan' : 'goerli.etherscan';
 				return "https://$middle.io/tx/$hash";
